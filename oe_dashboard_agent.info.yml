@@ -1,0 +1,6 @@
+name: OpenEuropa Dashboard Agent
+description: OpenEuropa Dashboard Agent.
+package: OpenEuropa
+
+type: module
+core: 8.x
