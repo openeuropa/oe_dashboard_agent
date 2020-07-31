@@ -1,6 +1,7 @@
 # OpenEuropa Dashboard Agent
 
-`[One Paragraph of project description goes here]`
+Agent used from the NextEuropa Dashboard. Provides an overview of all the used modules and a way to get a one time
+login link for user id 1.
 
 ## Development setup
 
