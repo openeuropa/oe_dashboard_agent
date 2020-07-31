@@ -1,0 +1,5 @@
+services:
+  access_check.dashboard_agent:
+    class: Drupal\oe_dashboard_agent\Access\DashboardAgentAccessCheck
+    tags:
+      - { name: access_check, applies_to: _dashboard_agent_access }
