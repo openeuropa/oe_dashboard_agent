@@ -40,27 +40,19 @@ class DashboardAgentTest extends BrowserTestBase {
 
     $client = $this->getHttpClient();
 
-    $url = Url::fromRoute('oe_dashboard_agent_test.protected')
-      ->setAbsolute(TRUE)
-      ->toString();
-    $options = [
-      'headers' => [],
-      'http_errors' => FALSE,
-    ];
+    $url = Url::fromRoute('oe_dashboard_agent_test.protected');
 
     // Test that access is denied with no token in header.
-    $result = $client->get($url, $options);
-    $this->assertEquals(403, $result->getStatusCode());
+    $this->drupalGet($url);
+    $this->assertSession()->statusCodeEquals(403);
 
     // Test that access is denied with incorrect token in header.
-    $options['headers']['NETOKEN'] = '70870cce44daa1745b2af95ed6b374ed41cd2e809176c7c0fe8c06e337fd29f2cc2cf413b55540be168c1776fff631e259bbb87f7840897c73f0551086584cf1d';
-    $result = $client->get($url, $options);
-    $this->assertEquals(403, $result->getStatusCode());
+    $this->drupalGet($url, [], ['NETOKEN' => '70870cce44daa1745b2af95ed6b374ed41cd2e809176c7c0fe8c06e337fd29f2cc2cf413b55540be168c1776fff631e259bbb87f7840897c73f0551086584cf1d']);
+    $this->assertSession()->statusCodeEquals(403);
 
     // Test that access is granted with correct token in header.
-    $options['headers']['NETOKEN'] = 'imx70870cce44daa1745b2af95ed6b374ed41cd2e809176c7c0fe8c06e337fd29f2cc2cf413b55540be168c1776fff631e259bbb87f7840897c73f0551086584cf1d';
-    $result = $client->get($url, $options);
-    $this->assertEquals(200, $result->getStatusCode());
+    $this->drupalGet($url, [], ['NETOKEN' => 'imx70870cce44daa1745b2af95ed6b374ed41cd2e809176c7c0fe8c06e337fd29f2cc2cf413b55540be168c1776fff631e259bbb87f7840897c73f0551086584cf1d']);
+    $this->assertSession()->statusCodeEquals(200);
   }
 
 }
