@@ -1,0 +1,7 @@
+name: OpenEuropa Dashboard Agent
+description: "Agent used from the NextEuropa Dashboard. Provides an overview of all the used modules and a way to get a one time login link for user id 1."
+package: OpenEuropa
+
+type: module
+core: 8.x
+core_version_requirement: ^8 || ^9
