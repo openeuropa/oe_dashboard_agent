@@ -52,4 +52,53 @@ class DashboardAgentTest extends BrowserTestBase {
     $this->assertSession()->statusCodeEquals(200);
   }
 
+  /**
+   * Tests access to the test route by generating a fresh token.
+   */
+  public function testRouteAccessWithHashGeneration(): void {
+    // Generate a hash for the current time.
+    $date = new DrupalDateTime('now');
+    $current_hash = $this->generateHash($date);
+
+    // Generate a hash for yesterday.
+    $date = new DrupalDateTime('now');
+    $date = $date->modify('-1 day');
+    $yesterday_hash = $this->generateHash($date);
+
+    // Generate a hash for tomorrow.
+    $date = new DrupalDateTime('now');
+    $date->modify('+2 days');
+    $tomorrow_hash = $this->generateHash($date);
+
+    $url = Url::fromRoute('oe_dashboard_agent_test.protected');
+
+    $this->drupalGet($url, [], ['NETOKEN' => $current_hash]);
+    $this->assertSession()->statusCodeEquals(200);
+
+    $this->drupalGet($url, [], ['NETOKEN' => $yesterday_hash]);
+    $this->assertSession()->statusCodeEquals(403);
+
+    $this->drupalGet($url, [], ['NETOKEN' => $tomorrow_hash]);
+    $this->assertSession()->statusCodeEquals(403);
+  }
+
+  /**
+   * Generates a hash to be sent for authentication in the header.
+   *
+   * @param \Drupal\Core\Datetime\DrupalDateTime $date
+   *   The date of the generation.
+   *
+   * @return string
+   *   The hash.
+   */
+  protected function generateHash(DrupalDateTime $date): string {
+    $token = getenv('DASHBOARD_TOKEN');
+    // The salt has to be 4 characters.
+    $salt = '4444';
+    $date = $date->format('Ymd');
+    $temporary_token = $salt . $token . $date;
+    $hash = hash("SHA512", $temporary_token);
+    return $salt . $hash;
+  }
+
 }
