@@ -11,7 +11,6 @@ services:
     image: percona/percona-server:5.6
     environment:
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-      - DASHBOARD_TOKEN=366035753E4387
 
 pipeline:
   composer-install:
