@@ -48,6 +48,7 @@ class ULIController extends ControllerBase {
     $user = User::load(1);
     $this->moduleHandler()->load('user');
 
+    // Generate the absolute url.
     $url = user_pass_reset_url($user);
     // Get the relative path and concatenate /login.
     $relative_url = substr($url, strpos($url, '/user')) . '/login';
