@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
- * Route controller for dashboard extensions path.
+ * Route controller for dashboard extensions endpoint.
  */
 class ExtensionsController extends ControllerBase {
 
