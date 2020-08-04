@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Drupal\Tests\oe_dashboard_agent\Functional;
 
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Url;
-use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\Tests\BrowserTestBase;
 
 /**
@@ -13,11 +14,9 @@ use Drupal\Tests\BrowserTestBase;
 class DashboardAgentTest extends BrowserTestBase {
 
   /**
-   * Modules to enable.
-   *
-   * @var array
+   * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'system',
     'datetime_testing',
     'oe_dashboard_agent_test',
@@ -31,14 +30,12 @@ class DashboardAgentTest extends BrowserTestBase {
   /**
    * Tests access to the test route with the access checker.
    */
-  public function testRouteAccess() {
-    // Freeze the time at a specific point.
-    $static_time = new DrupalDateTime('2020-08-03', DateTimeItemInterface::STORAGE_TIMEZONE);
+  public function testRouteAccess(): void {
+    // Freeze the time on August 8 2020 when the hash was generated.
+    $date = DrupalDateTime::createFromFormat('Y-m-d H', '2020-08-03 12');
     $time = \Drupal::service('datetime.time');
     $time->freezeTime();
-    $time->setTime($static_time->getTimestamp());
-
-    $client = $this->getHttpClient();
+    $time->setTime($date->getTimestamp());
 
     $url = Url::fromRoute('oe_dashboard_agent_test.protected');
 
