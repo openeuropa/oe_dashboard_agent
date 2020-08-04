@@ -1,7 +1,20 @@
 # OpenEuropa Dashboard Agent
 
-Agent used from the NextEuropa Dashboard. Provides an overview of all the used modules and a way to get a one time
-login link for user id 1.
+Drupal module that integrates with the central Dashboard.
+
+It provides a series of endpoints which expose information about the site to the Dashboard.
+
+## Installation
+
+In order to be able to authenticate the Dashboard requests, you need to:
+
+* Establish an environment specific token that both the site environment and the Dashboard are aware of
+* Set that token in an environment variable called `DASHBOARD_TOKEN`
+* Ensure the site `settings.php` reads the environment variable by containing the following:
+
+```
+$settings["oe_dashboard_agent.token"] = getenv('DASHBOARD_TOKEN');
+```
 
 ## Development setup
 

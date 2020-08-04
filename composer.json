@@ -13,6 +13,7 @@
         "composer/installers": "~1.5",
         "drupal-composer/drupal-scaffold": "~2.2",
         "drupal/config_devel": "~1.2",
+        "drupal/datetime_testing": "1.x-dev",
         "drupal/drupal-extension": "~4.0",
         "drush/drush": "~9.0@stable",
         "guzzlehttp/guzzle": "~6.3",

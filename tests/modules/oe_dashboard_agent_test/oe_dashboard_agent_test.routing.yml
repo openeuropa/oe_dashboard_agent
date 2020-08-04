@@ -1,0 +1,8 @@
+oe_dashboard_agent_test.protected:
+  path: dashboard_agent/test
+  defaults:
+    _controller: '\Drupal\oe_dashboard_agent_test\Controller\TestController::testMethod'
+  requirements:
+    _dashboard_agent_access: 'TRUE'
+  options:
+    no_cache: 'TRUE'
