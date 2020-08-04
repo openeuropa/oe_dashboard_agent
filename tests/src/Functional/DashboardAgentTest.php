@@ -5,6 +5,7 @@ declare(strict_types = 1);
 namespace Drupal\Tests\oe_dashboard_agent\Functional;
 
 use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\Core\Site\Settings;
 use Drupal\Core\Url;
 use Drupal\Tests\BrowserTestBase;
 
@@ -92,7 +93,7 @@ class DashboardAgentTest extends BrowserTestBase {
    *   The hash.
    */
   protected function generateHash(DrupalDateTime $date): string {
-    $token = getenv('DASHBOARD_TOKEN');
+    $token = Settings::get('oe_dashboard_agent.token');
     // The salt has to be 4 characters.
     $salt = '4444';
     $date = $date->format('Ymd');

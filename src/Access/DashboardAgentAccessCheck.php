@@ -10,6 +10,7 @@ use Drupal\Core\Access\AccessResultInterface;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Site\Settings;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
@@ -54,7 +55,7 @@ class DashboardAgentAccessCheck implements AccessInterface {
       return AccessResult::forbidden()->setReason('NETOKEN reqåuest header is missing')->setCacheMaxAge(0);
     }
 
-    $dashboard_token = getenv('DASHBOARD_TOKEN');
+    $dashboard_token = Settings::get('oe_dashboard_agent.token');
     if (!$dashboard_token) {
       return AccessResult::forbidden()->setReason('DASHBOARD_TOKEN environment variable is not set.')->setCacheMaxAge(0);
     }
