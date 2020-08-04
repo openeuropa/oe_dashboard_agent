@@ -52,12 +52,12 @@ class DashboardAgentAccessCheck implements AccessInterface {
    */
   public function access(Route $route, RouteMatchInterface $route_match, Request $request): AccessResultInterface {
     if (!$request->headers->has('NETOKEN')) {
-      return AccessResult::forbidden()->setReason('NETOKEN request header is missing')->setCacheMaxAge(0);
+      return AccessResult::forbidden()->setReason('The NETOKEN request header is missing')->setCacheMaxAge(0);
     }
 
     $dashboard_token = Settings::get('oe_dashboard_agent.token');
     if (!$dashboard_token) {
-      return AccessResult::forbidden()->setReason('DASHBOARD_TOKEN environment variable is not set.')->setCacheMaxAge(0);
+      return AccessResult::forbidden()->setReason('Missing dashboard token. See installation instructions.')->setCacheMaxAge(0);
     }
 
     $netoken = $request->headers->get('NETOKEN');
@@ -77,7 +77,7 @@ class DashboardAgentAccessCheck implements AccessInterface {
       return AccessResult::allowed()->setCacheMaxAge(0);
     }
 
-    return AccessResult::forbidden()->setCacheMaxAge(0);
+    return AccessResult::forbidden()->setReason('The NETOKEN request header is incorrect.')->setCacheMaxAge(0);
   }
 
 }
