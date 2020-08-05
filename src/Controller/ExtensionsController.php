@@ -119,7 +119,7 @@ class ExtensionsController extends ControllerBase {
         ];
         continue;
       }
-      $info['extensions'][$extension_name] = [
+      $info['modules'][$extension_name] = [
         'name' => $extension->info['name'],
         'package' => $package ? $package : '',
         'version' => isset($extension->info['version']) ? $extension->info['version'] : '',
