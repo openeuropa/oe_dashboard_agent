@@ -8,6 +8,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Extension\InfoParserException;
 use Drupal\Core\Extension\ModuleExtensionList;
 use Drupal\Core\Extension\ThemeHandlerInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -31,16 +32,26 @@ class ExtensionsController extends ControllerBase {
   protected $themeHandler;
 
   /**
+   * The logger service.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelInterface
+   */
+  protected $logger;
+
+  /**
    * ExtensionsController constructor.
    *
    * @param \Drupal\Core\Extension\ModuleExtensionList $extension_list_module
    *   The module extension list.
    * @param \Drupal\Core\Extension\ThemeHandlerInterface $theme_handler
    *   The theme handler.
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
+   *   The logger service.
    */
-  public function __construct(ModuleExtensionList $extension_list_module, ThemeHandlerInterface $theme_handler) {
+  public function __construct(ModuleExtensionList $extension_list_module, ThemeHandlerInterface $theme_handler, LoggerChannelFactoryInterface $logger_factory) {
     $this->moduleExtensionList = $extension_list_module;
     $this->themeHandler = $theme_handler;
+    $this->logger = $logger_factory->get('dashboard_agent');
   }
 
   /**
@@ -49,12 +60,13 @@ class ExtensionsController extends ControllerBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('extension.list.module'),
-      $container->get('theme_handler')
+      $container->get('theme_handler'),
+      $container->get('logger.factory')
     );
   }
 
   /**
-   * Generates a json containing system information.
+   * Generates a json containing all available extensions.
    *
    * @SuppressWarnings(PHPMD.CyclomaticComplexity)
    * @SuppressWarnings(PHPMD.NPathComplexity)
@@ -62,13 +74,13 @@ class ExtensionsController extends ControllerBase {
   public function extensions() {
     // Get all available modules and profiles.
     try {
-      $modules = $this->moduleExtensionList->reset()->getList();
+      $extensions = $this->moduleExtensionList->reset()->getList();
       // Sort modules by name.
-      uasort($modules, 'system_sort_modules_by_info_name');
+      uasort($extensions, 'system_sort_modules_by_info_name');
     }
     catch (InfoParserException $e) {
-      $this->messenger()->addError($this->t('Modules could not be listed due to an error: %error', ['%error' => $e->getMessage()]));
-      $modules = [];
+      $this->logger->warning($this->t('Extensions could not be listed due to an error: %error', ['%error' => $e->getMessage()]));
+      $extensions = [];
     }
 
     // Get all available themes.
@@ -78,7 +90,7 @@ class ExtensionsController extends ControllerBase {
       uasort($themes, 'system_sort_modules_by_info_name');
     }
     catch (InfoParserException $e) {
-      $this->messenger()->addError($this->t('Themes could not be listed due to an error: %error', ['%error' => $e->getMessage()]));
+      $this->logger->warning($this->t('Themes could not be listed due to an error: %error', ['%error' => $e->getMessage()]));
       $themes = [];
     }
 
@@ -89,51 +101,56 @@ class ExtensionsController extends ControllerBase {
     $info = [];
 
     // Retrieve modules and profiles information.
-    foreach ($modules as $filename => $module) {
-      $package = $module->info['package'];
+    foreach ($extensions as $extension_name => $extension) {
+      $package = isset($extension->info['package']) ? $extension->info['package'] : '';
       // Skip testing and core experimental modules.
       if ($package === 'Testing' || $package === 'Core (Experimental)') {
         continue;
       }
       // Get profiles.
-      if (strpos($module->getPathname(), '/profiles/') !== FALSE) {
-        $info['profiles'][$filename] = [
-          'name' => $module->info['name'],
-          'package' => $package ? $package : '',
-          'version' => $module->info['version'] ? $module->info['version'] : '',
-          'path' => $module->getPathname(),
-          'installed' => (bool) $module->status,
-          'requires' => array_keys($module->requires) ? array_keys($module->requires) : '',
+      if ($extension->getType() === 'profile') {
+        $info['profiles'][$extension_name] = [
+          'name' => $extension->info['name'],
+          'package' => $package,
+          'version' => isset($extension->info['version']) ? $extension->info['version'] : '',
+          'path' => $extension->getPathname(),
+          'installed' => (bool) $extension->status,
+          'requires' => array_keys($extension->requires) ? array_keys($extension->requires) : '',
         ];
         continue;
       }
-      $info['modules'][$filename] = [
-        'name' => $module->info['name'],
+      $info['extensions'][$extension_name] = [
+        'name' => $extension->info['name'],
         'package' => $package ? $package : '',
-        'version' => $module->info['version'] ? $module->info['version'] : '',
-        'path' => $module->getPathname(),
-        'installed' => (bool) $module->status,
-        'requires' => array_keys($module->requires) ? array_keys($module->requires) : '',
+        'version' => isset($extension->info['version']) ? $extension->info['version'] : '',
+        'path' => $extension->getPathname(),
+        'installed' => (bool) $extension->status,
+        'requires' => array_keys($extension->requires) ? array_keys($extension->requires) : '',
       ];
     }
 
     // Retrieve themes information.
-    foreach ($themes as $filename => $theme) {
+    foreach ($themes as $theme_name => $theme) {
+      $package = isset($theme->info['package']) ? $theme->info['package'] : '';
       // Skip test themes.
-      if (strpos($filename, 'test') !== FALSE) {
+      if ($package === 'Testing') {
         continue;
       }
-      $package = $theme->info['package'];
-      $info['themes'][$filename] = [
+      $info['themes'][$theme_name] = [
         'name' => $theme->info['name'],
         'package' => $package ? $package : '',
-        'version' => $theme->info['version'] ? $theme->info['version'] : '',
+        'version' => isset($theme->info['version']) ? $theme->info['version'] : '',
         'path' => $theme->getPathname(),
         'installed' => (bool) $theme->status,
-        'default' => ($filename === $theme_default),
+        'default' => ($theme_name === $theme_default),
       ];
     }
 
+    // Add Drupal and PHP versions.
+    $info['drupal_version'] = \DRUPAL::VERSION;
+    $info['php_version'] = phpversion();
+
+    $this->logger->info('The list of extensions was requested.');
     return new JsonResponse(['extensions' => $info]);
   }
 

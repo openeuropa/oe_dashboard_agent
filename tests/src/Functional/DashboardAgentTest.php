@@ -51,6 +51,7 @@ class DashboardAgentTest extends BrowserTestBase {
       $url = Url::fromRoute($route);
 
       // Test that access is denied with no hash in header.
+      $this->setEnvironmentToken('');
       $this->drupalGet($url);
       $this->assertSession()->statusCodeEquals(403);
 
@@ -135,6 +136,31 @@ class DashboardAgentTest extends BrowserTestBase {
   }
 
   /**
+   * Tests the response for the extensions endpoint.
+   */
+  public function testExtensionsEndpoint(): void {
+    // Set the correct token in the environment.
+    $this->setEnvironmentToken($this->getEnvironmentToken());
+
+    // Generate a hash for the current time.
+    $date = new DrupalDateTime('now');
+    $current_hash = $this->generateHash($date);
+
+    $url = Url::fromRoute('oe_dashboard_agent.extensions');
+    $json = $this->drupalGet($url, [], ['NETOKEN' => $current_hash]);
+    $response = json_decode($json);
+    $extensions = $response->extensions;
+    $this->assertEquals('OpenEuropa Dashboard Agent', $extensions->extensions->oe_dashboard_agent->name);
+    $this->assertEquals('OpenEuropa', $extensions->extensions->oe_dashboard_agent->package);
+    $this->assertEquals('', $extensions->extensions->oe_dashboard_agent->version);
+    $this->assertEquals('modules/custom/oe_dashboard_agent/oe_dashboard_agent.info.yml', $extensions->extensions->oe_dashboard_agent->path);
+    $this->assertEquals(TRUE, $extensions->extensions->oe_dashboard_agent->installed);
+    $this->assertEquals(['datetime', 'field'], $extensions->extensions->oe_dashboard_agent->requires);
+    $this->assertEquals('8.8.4', $extensions->drupal_version);
+    $this->assertEquals('7.3.15-3+ubuntu18.04.1+deb.sury.org+1', $extensions->php_version);
+  }
+
+  /**
    * Generates a hash to be sent for authentication in the header.
    *
    * @param \Drupal\Core\Datetime\DrupalDateTime $date
@@ -189,6 +215,7 @@ class DashboardAgentTest extends BrowserTestBase {
   protected function getEndpointRoutes(): array {
     return [
       'oe_dashboard_agent.uli',
+      'oe_dashboard_agent.extensions',
     ];
   }
 
