@@ -45,33 +45,35 @@ class DashboardAgentTest extends BrowserTestBase {
     $time->freezeTime();
     $time->setTime($date->getTimestamp());
 
-    $uli_endpoint = Url::fromRoute('oe_dashboard_agent.uli');
+    $endpoints = $this->getEndpoints();
 
-    // Test that access is denied with no hash in header.
-    $this->drupalGet($uli_endpoint);
-    $this->assertSession()->statusCodeEquals(403);
+    foreach ($endpoints as $endpoint) {
+      $url = Url::fromRoute($endpoint);
 
-    // Test that access is denied with no token in the environment.
-    $this->drupalGet($uli_endpoint, [], ['NETOKEN' => $this->correctHash]);
-    $this->assertSession()->statusCodeEquals(403);
+      // Test that access is denied with no hash in header.
+      $this->drupalGet($url);
+      $this->assertSession()->statusCodeEquals(403);
 
-    // Test that access is denied with a wrong token in the environment.
-    $this->setEnvironmentToken('wrong-token');
-    $this->drupalGet($uli_endpoint, [], ['NETOKEN' => $this->correctHash]);
-    $this->assertSession()->statusCodeEquals(403);
+      // Test that access is denied with no token in the environment.
+      $this->drupalGet($url, [], ['NETOKEN' => $this->correctHash]);
+      $this->assertSession()->statusCodeEquals(403);
 
-    // Test that access is denied with incorrect hash in header.
-    $this->drupalGet($uli_endpoint, [], ['NETOKEN' => '70870cce44daa1745b2af95ed6b374ed41cd2e809176c7c0fe8c06e337fd29f2cc2cf413b55540be168c1776fff631e259bbb87f7840897c73f0551086584cf1d']);
-    $this->assertSession()->statusCodeEquals(403);
+      // Test that access is denied with a wrong token in the environment.
+      $this->setEnvironmentToken('wrong-token');
+      $this->drupalGet($url, [], ['NETOKEN' => $this->correctHash]);
+      $this->assertSession()->statusCodeEquals(403);
 
-    // Set a correct token in the environment.
-    $this->setEnvironmentToken($this->getEnvironmentToken());
+      // Test that access is denied with incorrect hash in header.
+      $this->drupalGet($url, [], ['NETOKEN' => '70870cce44daa1745b2af95ed6b374ed41cd2e809176c7c0fe8c06e337fd29f2cc2cf413b55540be168c1776fff631e259bbb87f7840897c73f0551086584cf1d']);
+      $this->assertSession()->statusCodeEquals(403);
 
-    // Test that access is granted with a correct hash in header.
-    $this->drupalGet($uli_endpoint, [], ['NETOKEN' => $this->correctHash]);
-    $this->assertSession()->statusCodeEquals(200);
-    // Assert that the uli is available.
-    $this->assertSession()->responseContains('{"uli":"\/user\/reset\/1\/');
+      // Set a correct token in the environment.
+      $this->setEnvironmentToken($this->getEnvironmentToken());
+
+      // Test that access is granted with a correct hash in header.
+      $this->drupalGet($url, [], ['NETOKEN' => $this->correctHash]);
+      $this->assertSession()->statusCodeEquals(200);
+    }
   }
 
   /**
@@ -87,7 +89,7 @@ class DashboardAgentTest extends BrowserTestBase {
 
     // Generate a hash for yesterday.
     $date = new DrupalDateTime('now');
-    $date = $date->modify('-1 day');
+    $date->modify('-1 day');
     $yesterday_hash = $this->generateHash($date);
 
     // Generate a hash for tomorrow.
@@ -95,18 +97,38 @@ class DashboardAgentTest extends BrowserTestBase {
     $date->modify('+2 days');
     $tomorrow_hash = $this->generateHash($date);
 
-    $uli_endpoint = Url::fromRoute('oe_dashboard_agent.uli');
+    $endpoints = $this->getEndpoints();
 
-    $this->drupalGet($uli_endpoint, [], ['NETOKEN' => $current_hash]);
-    $this->assertSession()->statusCodeEquals(200);
+    foreach ($endpoints as $endpoint) {
+      $url = Url::fromRoute($endpoint);
+
+      $this->drupalGet($url, [], ['NETOKEN' => $current_hash]);
+      $this->assertSession()->statusCodeEquals(200);
+
+      $this->drupalGet($url, [], ['NETOKEN' => $yesterday_hash]);
+      $this->assertSession()->statusCodeEquals(403);
+
+      $this->drupalGet($url, [], ['NETOKEN' => $tomorrow_hash]);
+      $this->assertSession()->statusCodeEquals(403);
+    }
+  }
+
+  /**
+   * Tests the response for the uli endpoint.
+   */
+  public function testUliEndpoint(): void {
+    // Set the correct token in the environment.
+    $this->setEnvironmentToken($this->getEnvironmentToken());
+
+    // Generate a hash for the current time.
+    $date = new DrupalDateTime('now');
+    $current_hash = $this->generateHash($date);
+
+    $url = Url::fromRoute('oe_dashboard_agent.uli');
+    $this->drupalGet($url, [], ['NETOKEN' => $current_hash]);
+
     // Assert that the uli is available.
-    $this->assertSession()->responseContains('{"uli":"\/user\/reset\/1\/');
-
-    $this->drupalGet($uli_endpoint, [], ['NETOKEN' => $yesterday_hash]);
-    $this->assertSession()->statusCodeEquals(403);
-
-    $this->drupalGet($uli_endpoint, [], ['NETOKEN' => $tomorrow_hash]);
-    $this->assertSession()->statusCodeEquals(403);
+    $this->assertSession()->responseContains('\/user\/reset\/1\/');
   }
 
   /**
@@ -153,6 +175,18 @@ class DashboardAgentTest extends BrowserTestBase {
       'required' => TRUE,
     ];
     $this->writeSettings($settings);
+  }
+
+  /**
+   * Returns the list of endpoints to be tested.
+   *
+   * @return array
+   *   The list.
+   */
+  protected function getEndpoints(): array {
+    return [
+      'oe_dashboard_agent.uli',
+    ];
   }
 
 }
