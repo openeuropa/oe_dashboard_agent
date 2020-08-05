@@ -1,0 +1,9 @@
+oe_dashboard_agent.uli:
+  path: '/admin/reports/dashboard/uli'
+  defaults:
+    _title: 'Dashboard ULI'
+    _controller: '\Drupal\oe_dashboard_agent\Controller\UliController::generateUli'
+  requirements:
+    _dashboard_agent_access: 'TRUE'
+  options:
+    no_cache: 'TRUE'
