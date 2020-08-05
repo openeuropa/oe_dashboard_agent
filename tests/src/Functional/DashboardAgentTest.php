@@ -7,6 +7,7 @@ namespace Drupal\Tests\oe_dashboard_agent\src\Functional;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Site\Settings;
 use Drupal\Core\Url;
+use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
 use Drupal\Tests\BrowserTestBase;
 
 /**
@@ -85,16 +86,16 @@ class DashboardAgentTest extends BrowserTestBase {
     $this->setEnvironmentToken($this->getEnvironmentToken());
 
     // Generate a hash for the current time.
-    $date = new DrupalDateTime('now');
+    $date = new DrupalDateTime('now', DateTimeItemInterface::STORAGE_TIMEZONE);
     $current_hash = $this->generateHash($date);
 
     // Generate a hash for yesterday.
-    $date = new DrupalDateTime('now');
+    $date = new DrupalDateTime('now', DateTimeItemInterface::STORAGE_TIMEZONE);
     $date->modify('-1 day');
     $yesterday_hash = $this->generateHash($date);
 
     // Generate a hash for tomorrow.
-    $date = new DrupalDateTime('now');
+    $date = new DrupalDateTime('now', DateTimeItemInterface::STORAGE_TIMEZONE);
     $date->modify('+2 days');
     $tomorrow_hash = $this->generateHash($date);
 
