@@ -123,7 +123,7 @@ class DashboardAgentTest extends BrowserTestBase {
     $this->setEnvironmentToken($this->getEnvironmentToken());
 
     // Generate a hash for the current time.
-    $date = new DrupalDateTime('now');
+    $date = new DrupalDateTime('now', DateTimeItemInterface::STORAGE_TIMEZONE);
     $current_hash = $this->generateHash($date);
 
     $url = Url::fromRoute('oe_dashboard_agent.uli');
@@ -144,21 +144,42 @@ class DashboardAgentTest extends BrowserTestBase {
     $this->setEnvironmentToken($this->getEnvironmentToken());
 
     // Generate a hash for the current time.
-    $date = new DrupalDateTime('now');
-    $current_hash = $this->generateHash($date);
+    $date = new DrupalDateTime('now', DateTimeItemInterface::STORAGE_TIMEZONE);
+    $hash = $this->generateHash($date);
 
     $url = Url::fromRoute('oe_dashboard_agent.extensions');
-    $json = $this->drupalGet($url, [], ['NETOKEN' => $current_hash]);
+    $json = $this->drupalGet($url, [], ['NETOKEN' => $hash]);
     $response = json_decode($json);
     $extensions = $response->extensions;
-    $this->assertEquals('OpenEuropa Dashboard Agent', $extensions->extensions->oe_dashboard_agent->name);
-    $this->assertEquals('OpenEuropa', $extensions->extensions->oe_dashboard_agent->package);
-    $this->assertEquals('', $extensions->extensions->oe_dashboard_agent->version);
-    $this->assertEquals('modules/custom/oe_dashboard_agent/oe_dashboard_agent.info.yml', $extensions->extensions->oe_dashboard_agent->path);
-    $this->assertEquals(TRUE, $extensions->extensions->oe_dashboard_agent->installed);
-    $this->assertEquals(['datetime', 'field'], $extensions->extensions->oe_dashboard_agent->requires);
-    $this->assertEquals('8.8.4', $extensions->drupal_version);
-    $this->assertEquals('7.3.15-3+ubuntu18.04.1+deb.sury.org+1', $extensions->php_version);
+
+    // Assert a module.
+    $modules = $extensions->modules;
+    $this->assertEquals('OpenEuropa Dashboard Agent', $modules->oe_dashboard_agent->name);
+    $this->assertEquals('OpenEuropa', $modules->oe_dashboard_agent->package);
+    $this->assertEquals('', $modules->oe_dashboard_agent->version);
+    $this->assertEquals('modules/custom/oe_dashboard_agent/oe_dashboard_agent.info.yml', $modules->oe_dashboard_agent->path);
+    $this->assertEquals(TRUE, $modules->oe_dashboard_agent->installed);
+    $this->assertEquals(['datetime', 'field'], $modules->oe_dashboard_agent->requires);
+
+    // Assert a profile.
+    $profiles = $extensions->profiles;
+    $this->assertEquals('Testing', $profiles->testing->name);
+    $this->assertEquals('Other', $profiles->testing->package);
+    $this->assertEquals('core/profiles/testing/testing.info.yml', $profiles->testing->path);
+    $this->assertEquals(TRUE, $profiles->testing->installed);
+    $this->assertEquals("", $profiles->testing->requires);
+
+    // Assert a theme.
+    $themes = $extensions->themes;
+    $this->assertEquals('Bartik', $themes->bartik->name);
+    $this->assertEquals('Core', $themes->bartik->package);
+    $this->assertEquals('core/themes/bartik/bartik.info.yml', $themes->bartik->path);
+    $this->assertEquals(FALSE, $themes->bartik->installed);
+    $this->assertEquals(FALSE, $themes->bartik->default);
+
+    // Assert the Drupal version.
+    $this->assertEquals(\Drupal::VERSION, $extensions->drupal_version);
+    $this->assertContains('php_version', array_keys((array) $extensions));
   }
 
   /**
