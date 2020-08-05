@@ -73,7 +73,7 @@ class UliController extends ControllerBase {
     $user = $this->entityTypeManager->getStorage('user')->load(1);
 
     $timestamp = $this->time->getCurrentTime();
-    $url = Url::fromRoute('user.reset',
+    $url = Url::fromRoute('user.reset.login',
       [
         'uid' => $user->id(),
         'timestamp' => $timestamp,
@@ -84,7 +84,7 @@ class UliController extends ControllerBase {
       ]
     )->toString();
 
-    $this->logger->info('ULI has been requested');
+    $this->logger->info('A ULI link has been requested.');
     return new JsonResponse(['uli' => $url]);
   }
 

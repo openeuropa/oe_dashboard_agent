@@ -45,10 +45,10 @@ class DashboardAgentTest extends BrowserTestBase {
     $time->freezeTime();
     $time->setTime($date->getTimestamp());
 
-    $endpoints = $this->getEndpoints();
+    $routes = $this->getEndpointRoutes();
 
-    foreach ($endpoints as $endpoint) {
-      $url = Url::fromRoute($endpoint);
+    foreach ($routes as $route) {
+      $url = Url::fromRoute($route);
 
       // Test that access is denied with no hash in header.
       $this->drupalGet($url);
@@ -97,10 +97,10 @@ class DashboardAgentTest extends BrowserTestBase {
     $date->modify('+2 days');
     $tomorrow_hash = $this->generateHash($date);
 
-    $endpoints = $this->getEndpoints();
+    $routes = $this->getEndpointRoutes();
 
-    foreach ($endpoints as $endpoint) {
-      $url = Url::fromRoute($endpoint);
+    foreach ($routes as $route) {
+      $url = Url::fromRoute($route);
 
       $this->drupalGet($url, [], ['NETOKEN' => $current_hash]);
       $this->assertSession()->statusCodeEquals(200);
@@ -114,7 +114,7 @@ class DashboardAgentTest extends BrowserTestBase {
   }
 
   /**
-   * Tests the response for the uli endpoint.
+   * Tests the response for the URI endpoint.
    */
   public function testUliEndpoint(): void {
     // Set the correct token in the environment.
@@ -125,10 +125,13 @@ class DashboardAgentTest extends BrowserTestBase {
     $current_hash = $this->generateHash($date);
 
     $url = Url::fromRoute('oe_dashboard_agent.uli');
-    $this->drupalGet($url, [], ['NETOKEN' => $current_hash]);
+    $json = $this->drupalGet($url, [], ['NETOKEN' => $current_hash]);
+    $response = json_decode($json);
+    $uli = $response->uli;
 
-    // Assert that the uli is available.
-    $this->assertSession()->responseContains('\/user\/reset\/1\/');
+    // Access the ULI and assert we got logged in.
+    $this->drupalGet($uli);
+    $this->assertSession()->pageTextContains('You have just used your one-time login link. It is no longer necessary to use this link to log in. Please change your password.');
   }
 
   /**
@@ -178,12 +181,12 @@ class DashboardAgentTest extends BrowserTestBase {
   }
 
   /**
-   * Returns the list of endpoints to be tested.
+   * Returns the list of endpoint routes to be tested.
    *
    * @return array
    *   The list.
    */
-  protected function getEndpoints(): array {
+  protected function getEndpointRoutes(): array {
     return [
       'oe_dashboard_agent.uli',
     ];
