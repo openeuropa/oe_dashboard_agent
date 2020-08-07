@@ -1,5 +1,5 @@
 services:
-  access_check.dashboard_agent:
+  oe_dashboard_agent.access_check:
     class: Drupal\oe_dashboard_agent\Access\DashboardAgentAccessCheck
     arguments: ['@datetime.time']
     tags:

@@ -1,0 +1,6 @@
+services:
+  oe_dashboard_agent_test.extensions_info_subscriber:
+    class: Drupal\oe_dashboard_agent_test\EventSubscriber\ExtensionsInfoTestSubscriber
+    arguments: ['@state']
+    tags:
+      - { name: event_subscriber }

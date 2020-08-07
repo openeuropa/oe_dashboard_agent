@@ -22,6 +22,7 @@ class DashboardAgentTest extends BrowserTestBase {
     'system',
     'datetime_testing',
     'oe_dashboard_agent',
+    'oe_dashboard_agent_test',
   ];
 
   /**
@@ -180,6 +181,15 @@ class DashboardAgentTest extends BrowserTestBase {
     // Assert the Drupal version.
     $this->assertEquals(\Drupal::VERSION, $extensions->drupal_version);
     $this->assertContains('php_version', array_keys((array) $extensions));
+
+    // Assert that we can alter the information.
+    $this->assertNotContains('oe_dashboard_agent_test.extensions_alter', array_keys((array) $extensions));
+    \Drupal::state()->set('oe_dashboard_agent_test.extensions_alter', 'altered');
+    $url = Url::fromRoute('oe_dashboard_agent.extensions');
+    $json = $this->drupalGet($url, [], ['NETOKEN' => $hash]);
+    $response = json_decode($json);
+    $extensions = $response->extensions;
+    $this->assertContains('oe_dashboard_agent_test.extensions_alter', array_keys((array) $extensions));
   }
 
   /**

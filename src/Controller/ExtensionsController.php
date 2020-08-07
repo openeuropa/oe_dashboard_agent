@@ -9,7 +9,9 @@ use Drupal\Core\Extension\InfoParserException;
 use Drupal\Core\Extension\ModuleExtensionList;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\oe_dashboard_agent\Event\ExtensionsInfoAlterEvent;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
@@ -39,6 +41,13 @@ class ExtensionsController extends ControllerBase {
   protected $logger;
 
   /**
+   * The event dispatcher.
+   *
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   */
+  protected $eventDispatcher;
+
+  /**
    * ExtensionsController constructor.
    *
    * @param \Drupal\Core\Extension\ModuleExtensionList $extension_list_module
@@ -47,11 +56,14 @@ class ExtensionsController extends ControllerBase {
    *   The theme handler.
    * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
    *   The logger service.
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
+   *   The event dispatcher.
    */
-  public function __construct(ModuleExtensionList $extension_list_module, ThemeHandlerInterface $theme_handler, LoggerChannelFactoryInterface $logger_factory) {
+  public function __construct(ModuleExtensionList $extension_list_module, ThemeHandlerInterface $theme_handler, LoggerChannelFactoryInterface $logger_factory, EventDispatcherInterface $eventDispatcher) {
     $this->moduleExtensionList = $extension_list_module;
     $this->themeHandler = $theme_handler;
     $this->logger = $logger_factory->get('dashboard_agent');
+    $this->eventDispatcher = $eventDispatcher;
   }
 
   /**
@@ -61,7 +73,8 @@ class ExtensionsController extends ControllerBase {
     return new static(
       $container->get('extension.list.module'),
       $container->get('theme_handler'),
-      $container->get('logger.factory')
+      $container->get('logger.factory'),
+      $container->get('event_dispatcher')
     );
   }
 
@@ -150,8 +163,11 @@ class ExtensionsController extends ControllerBase {
     $info['drupal_version'] = \DRUPAL::VERSION;
     $info['php_version'] = phpversion();
 
+    $event = new ExtensionsInfoAlterEvent($info);
+    $this->eventDispatcher->dispatch(ExtensionsInfoAlterEvent::EVENT, $event);
+
     $this->logger->info('The list of extensions was requested.');
-    return new JsonResponse(['extensions' => $info]);
+    return new JsonResponse(['extensions' => $event->getInfo()]);
   }
 
 }
