@@ -48,6 +48,13 @@ class ExtensionsController extends ControllerBase {
   protected $eventDispatcher;
 
   /**
+   * The location of the manifest file.
+   *
+   * @var string
+   */
+  protected $manifestFileLocation;
+
+  /**
    * ExtensionsController constructor.
    *
    * @param \Drupal\Core\Extension\ModuleExtensionList $extension_list_module
@@ -58,12 +65,15 @@ class ExtensionsController extends ControllerBase {
    *   The logger service.
    * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
    *   The event dispatcher.
+   * @param string $manifest_file_location
+   *   The location of the manifest file.
    */
-  public function __construct(ModuleExtensionList $extension_list_module, ThemeHandlerInterface $theme_handler, LoggerChannelFactoryInterface $logger_factory, EventDispatcherInterface $eventDispatcher) {
+  public function __construct(ModuleExtensionList $extension_list_module, ThemeHandlerInterface $theme_handler, LoggerChannelFactoryInterface $logger_factory, EventDispatcherInterface $eventDispatcher, string $manifest_file_location) {
     $this->moduleExtensionList = $extension_list_module;
     $this->themeHandler = $theme_handler;
     $this->logger = $logger_factory->get('dashboard_agent');
     $this->eventDispatcher = $eventDispatcher;
+    $this->manifestFileLocation = $manifest_file_location;
   }
 
   /**
@@ -74,7 +84,8 @@ class ExtensionsController extends ControllerBase {
       $container->get('extension.list.module'),
       $container->get('theme_handler'),
       $container->get('logger.factory'),
-      $container->get('event_dispatcher')
+      $container->get('event_dispatcher'),
+      $container->getParameter('oe_dashboard_agent.manifest_file_location')
     );
   }
 
@@ -164,11 +175,41 @@ class ExtensionsController extends ControllerBase {
     $info['drupal_version'] = \DRUPAL::VERSION;
     $info['php_version'] = phpversion();
 
+    $this->addSiteVersion($info);
+
     $event = new ExtensionsInfoAlterEvent($info);
     $this->eventDispatcher->dispatch(ExtensionsInfoAlterEvent::EVENT, $event);
 
     $this->logger->info('The list of extensions was requested.');
     return new JsonResponse(['extensions' => $event->getInfo()]);
+  }
+
+  /**
+   * Adds the site version to the info.
+   *
+   * @param array $info
+   *   The extensions info.
+   */
+  protected function addSiteVersion(array &$info): void {
+    if (!file_exists($this->manifestFileLocation) || !is_readable($this->manifestFileLocation)) {
+      $this->logger->warning('The manifest.json file was not found.');
+      return;
+    }
+
+    $file_content = file_get_contents($this->manifestFileLocation);
+    if (!$file_content) {
+      $this->logger->warning('The manifest.json file count not be read.');
+      return;
+    }
+
+    $manifest = json_decode($file_content, TRUE);
+    if (!$manifest) {
+      $this->logger->warning('The manifest.json file could not be decoded.');
+      return;
+    }
+
+    $info['site_version'] = $manifest['version'];
+    $info['site_commit'] = isset($manifest['sha']) ? $manifest['sha'] : '';
   }
 
 }

@@ -23,6 +23,7 @@ class DashboardAgentTest extends BrowserTestBase {
     'datetime_testing',
     'oe_dashboard_agent',
     'oe_dashboard_agent_test',
+    'dblog',
   ];
 
   /**
@@ -36,6 +37,37 @@ class DashboardAgentTest extends BrowserTestBase {
    * @var string
    */
   protected $correctHash = 'imx70870cce44daa1745b2af95ed6b374ed41cd2e809176c7c0fe8c06e337fd29f2cc2cf413b55540be168c1776fff631e259bbb87f7840897c73f0551086584cf1d';
+
+  /**
+   * The admin user.
+   *
+   * @var \Drupal\user\UserInterface
+   */
+  protected $adminUser;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp() {
+    parent::setUp();
+
+    $this->adminUser = $this->drupalCreateUser([
+      'administer site configuration',
+      'access administration pages',
+      'access site reports',
+    ]);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function tearDown() {
+    if (file_exists('../manifest.json')) {
+      unlink('../manifest.json');
+    }
+
+    parent::tearDown();
+  }
 
   /**
    * Tests access to the endpoints with the access checker.
@@ -148,10 +180,7 @@ class DashboardAgentTest extends BrowserTestBase {
     $date = new DrupalDateTime('now', DateTimeItemInterface::STORAGE_TIMEZONE);
     $hash = $this->generateHash($date);
 
-    $url = Url::fromRoute('oe_dashboard_agent.extensions');
-    $json = $this->drupalGet($url, [], ['NETOKEN' => $hash]);
-    $response = json_decode($json);
-    $extensions = $response->extensions;
+    $extensions = $this->requestExtensions($hash);
 
     // Assert a module.
     $modules = $extensions->modules;
@@ -186,11 +215,42 @@ class DashboardAgentTest extends BrowserTestBase {
     // Assert that we can alter the information.
     $this->assertNotContains('oe_dashboard_agent_test.extensions_alter', array_keys((array) $extensions));
     \Drupal::state()->set('oe_dashboard_agent_test.extensions_alter', 'altered');
-    $url = Url::fromRoute('oe_dashboard_agent.extensions');
-    $json = $this->drupalGet($url, [], ['NETOKEN' => $hash]);
-    $response = json_decode($json);
-    $extensions = $response->extensions;
+    $extensions = $this->requestExtensions($hash);
     $this->assertContains('oe_dashboard_agent_test.extensions_alter', array_keys((array) $extensions));
+
+    // The manifest.json file is missing.
+    $this->drupalLogin($this->adminUser);
+    $this->drupalGet('admin/reports/dblog');
+    $this->assertSession()->pageTextContains('The manifest.json file was not found.');
+    $this->assertSession()->pageTextNotContains('The manifest.json file count not be read.');
+    $this->clearLogMessages();
+
+    // Create an empty/invalid file in the expected location.
+    file_put_contents('../manifest.json', FALSE);
+    $this->requestExtensions($hash);
+    $this->drupalGet('admin/reports/dblog');
+    $this->assertSession()->pageTextNotContains('The manifest.json file was not found.');
+    $this->assertSession()->pageTextContains('The manifest.json file count not be read.');
+    $this->clearLogMessages();
+
+    // Create an non-json file in the expected location.
+    file_put_contents('../manifest.json', 'Not json');
+    $this->requestExtensions($hash);
+    $this->drupalGet('admin/reports/dblog');
+    $this->assertSession()->pageTextNotContains('The manifest.json file was not found.');
+    $this->assertSession()->pageTextNotContains('The manifest.json file count not be read.');
+    $this->assertSession()->pageTextContains('The manifest.json file could not be decoded.');
+    $this->clearLogMessages();
+
+    // Move the correct JSON file.
+    file_put_contents('../manifest.json', file_get_contents(drupal_get_path('module', 'oe_dashboard_agent') . '/tests/fixtures/manifest.json'));
+    $extensions = $this->requestExtensions($hash);
+    $this->drupalGet('admin/reports/dblog');
+    $this->assertSession()->pageTextNotContains('The manifest.json file was not found.');
+    $this->assertSession()->pageTextNotContains('The manifest.json file count not be read.');
+    $this->assertSession()->pageTextNotContains('The manifest.json file could not be decoded.');
+    $this->assertEquals('0.5', $extensions->site_version);
+    $this->assertEquals('dfs6dfwu34yr32423e23', $extensions->site_commit);
   }
 
   /**
@@ -250,6 +310,30 @@ class DashboardAgentTest extends BrowserTestBase {
       'oe_dashboard_agent.uli',
       'oe_dashboard_agent.extensions',
     ];
+  }
+
+  /**
+   * Makes a request to the extensions endpoint.
+   *
+   * @param string $hash
+   *   The authentication hash.
+   *
+   * @return object
+   *   The extensions list.
+   */
+  protected function requestExtensions(string $hash): object {
+    $url = Url::fromRoute('oe_dashboard_agent.extensions');
+    $json = $this->drupalGet($url, [], ['NETOKEN' => $hash]);
+    $response = json_decode($json);
+    return $response->extensions;
+  }
+
+  /**
+   * Clears the DB log messages.
+   */
+  protected function clearLogMessages(): void {
+    $this->drupalGet(Url::fromRoute('dblog.confirm'));
+    $this->drupalPostForm(NULL, [], 'Confirm');
   }
 
 }

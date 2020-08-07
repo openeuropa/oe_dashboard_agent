@@ -4,3 +4,6 @@ services:
     arguments: ['@datetime.time']
     tags:
       - { name: access_check, applies_to: _dashboard_agent_access }
+
+parameters:
+  oe_dashboard_agent.manifest_file_location: '../manifest.json'
