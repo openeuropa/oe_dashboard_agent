@@ -139,6 +139,7 @@ class ExtensionsController extends ControllerBase {
         'path' => $extension->getPathname(),
         'installed' => (bool) $extension->status,
         'requires' => array_keys($extension->requires) ? array_keys($extension->requires) : '',
+        'schema_version' => $extension->schema_version,
       ];
     }
 

@@ -160,6 +160,7 @@ class DashboardAgentTest extends BrowserTestBase {
     $this->assertEquals('', $modules->oe_dashboard_agent->version);
     $this->assertEquals('modules/custom/oe_dashboard_agent/oe_dashboard_agent.info.yml', $modules->oe_dashboard_agent->path);
     $this->assertEquals(TRUE, $modules->oe_dashboard_agent->installed);
+    $this->assertEquals(-1, $modules->oe_dashboard_agent->schema_version);
     $this->assertEquals(['datetime', 'field'], $modules->oe_dashboard_agent->requires);
 
     // Assert a profile.
