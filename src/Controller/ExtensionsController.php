@@ -150,7 +150,7 @@ class ExtensionsController extends ControllerBase {
         'path' => $extension->getPathname(),
         'installed' => (bool) $extension->status,
         'requires' => array_keys($extension->requires) ? array_keys($extension->requires) : '',
-        'schema_version' => $extension->schema_version,
+        'schema_version' => drupal_get_installed_schema_version($extension_name),
       ];
     }
 
