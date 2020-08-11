@@ -1,0 +1,29 @@
+<?php
+
+/**
+ * @file
+ * The OpenEuropa Dashboard Agent install file.
+ */
+
+declare(strict_types = 1);
+
+use Drupal\Core\Site\Settings;
+
+/**
+ * Implements hook_requirements().
+ */
+function oe_dashboard_agent_requirements($phase) {
+  $requirements = [];
+
+  // Show whether the token is found.
+  if ($phase == 'runtime') {
+    $value = Settings::get('oe_dashboard_agent.token', FALSE);
+    $requirements['oe_dashboard_agent.token'] = [
+      'title' => t('Dashboard agent token'),
+      'value' => $value ? t('Value set') : t('Value not set'),
+      'severity' => REQUIREMENT_INFO,
+    ];
+  }
+
+  return $requirements;
+}
