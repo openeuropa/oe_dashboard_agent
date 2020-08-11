@@ -1,6 +1,9 @@
 services:
-  access_check.dashboard_agent:
+  oe_dashboard_agent.access_check:
     class: Drupal\oe_dashboard_agent\Access\DashboardAgentAccessCheck
     arguments: ['@datetime.time']
     tags:
       - { name: access_check, applies_to: _dashboard_agent_access }
+
+parameters:
+  oe_dashboard_agent.manifest_file_location: '../manifest.json'

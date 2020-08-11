@@ -7,3 +7,12 @@ oe_dashboard_agent.uli:
     _dashboard_agent_access: 'TRUE'
   options:
     no_cache: 'TRUE'
+oe_dashboard_agent.extensions:
+  path: '/admin/reports/dashboard/extensions'
+  defaults:
+    _title: 'Dashboard extensions'
+    _controller: '\Drupal\oe_dashboard_agent\Controller\ExtensionsController::extensions'
+  requirements:
+    _dashboard_agent_access: 'TRUE'
+  options:
+    no_cache: 'TRUE'
