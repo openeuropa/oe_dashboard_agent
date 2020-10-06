@@ -56,7 +56,7 @@ class DashboardAgentAccessCheck implements AccessInterface {
       return AccessResult::forbidden()->setReason('The allowed IPs are not configured.')->setCacheMaxAge(0);
     }
 
-    if (!in_array($request->getClientIp(), explode(',', $allowed_ips))) {
+    if (!in_array($request->getClientIp(), $allowed_ips)) {
       return AccessResult::forbidden()->setReason('The request origin is not allowed.')->setCacheMaxAge(0);
     }
 

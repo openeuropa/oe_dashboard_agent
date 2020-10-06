@@ -348,7 +348,7 @@ class DashboardAgentTest extends BrowserTestBase {
    */
   protected function setEnvironmentAllowedIps(array $allowed): void {
     $settings['settings']['oe_dashboard_agent.allowed_ips'] = (object) [
-      'value' => implode(',', $allowed),
+      'value' => $allowed,
       'required' => TRUE,
     ];
     $this->writeSettings($settings);

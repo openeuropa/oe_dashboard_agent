@@ -11,8 +11,8 @@ In order to use this module with the Dashboard, you will need to configure you s
 ```
 // The token used by the Dashboard to authenticate its requests to the site.
 $settings["oe_dashboard_agent.token"] = '';
-// A comma separated list of IPs that are whitelisted for making requests to the Dashboard routes.
-$settings["oe_dashboard_agent.allowed_ips"] = '';
+// An array of IPs that are whitelisted for making requests to the Dashboard routes.
+$settings["oe_dashboard_agent.allowed_ips"] = [];
 ```
 
 To set up this module within the European Commission, OpenEuropa-based infrastructure, you will need to do the following:
@@ -23,7 +23,7 @@ To set up this module within the European Commission, OpenEuropa-based infrastru
 
 ```
 $settings["oe_dashboard_agent.token"] = getenv('DASHBOARD_TOKEN');
-$settings["oe_dashboard_agent.allowed_ips"] = getenv('DASHBOARD_ALLOWED_IPS');
+$settings["oe_dashboard_agent.allowed_ips"] = explode(',', getenv('DASHBOARD_ALLOWED_IPS');
 ```
 
 ## Development setup
