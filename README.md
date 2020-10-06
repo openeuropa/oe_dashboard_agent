@@ -6,14 +6,24 @@ It provides a series of endpoints which expose information about the site to the
 
 ## Installation
 
-In order to be able to authenticate the Dashboard requests, you need to:
+In order to use this module with the Dashboard, you will need to configure you site settings to have two required values:
 
-* Establish an environment specific token that both the site environment and the Dashboard are aware of
-* Set that token in an environment variable called `DASHBOARD_TOKEN`
-* Ensure the site `settings.php` reads the environment variable by containing the following:
+```
+// The token used by the Dashboard to authenticate its requests to the site.
+$settings["oe_dashboard_agent.token"] = '';
+// A comma separated list of IPs that are whitelisted for making requests to the Dashboard routes.
+$settings["oe_dashboard_agent.allowed_ips"] = '';
+```
+
+To set up this module within the European Commission, OpenEuropa-based infrastructure, you will need to do the following:
+
+* Establish the environment specific token that both the site environment and the Dashboard are aware of. Set that token in an environment variable called `DASHBOARD_TOKEN`.
+* Create a site environment variable called `DASHBOARD_ALLOWED_IPS` which contains a comma separated (or one) list of IPs to be whitelisted.
+* Ensure the site `settings.php` reads the environment and sets them in the above-mentioned settings, like so:
 
 ```
 $settings["oe_dashboard_agent.token"] = getenv('DASHBOARD_TOKEN');
+$settings["oe_dashboard_agent.allowed_ips"] = getenv('DASHBOARD_ALLOWED_IPS');
 ```
 
 ## Development setup

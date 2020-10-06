@@ -79,7 +79,6 @@ class DashboardAgentTest extends BrowserTestBase {
     $time->freezeTime();
     $time->setTime($date->getTimestamp());
 
-    $ip = $this->getCurrentHostIpAddress();
     $routes = $this->getEndpointRoutes();
 
     foreach ($routes as $route) {
@@ -101,7 +100,7 @@ class DashboardAgentTest extends BrowserTestBase {
       $this->assertSession()->statusCodeEquals(403);
 
       // Add the IP we are requesting from to the list of allowed IPs.
-      $this->setEnvironmentAllowedIps([$ip]);
+      $this->setEnvironmentAllowedIps($this->getCurrentHostIpAddresses());
 
       // Test that access is denied with no hash in header.
       $this->setEnvironmentToken('');
@@ -137,7 +136,7 @@ class DashboardAgentTest extends BrowserTestBase {
     // Set the correct token in the environment.
     $this->setEnvironmentToken($this->getEnvironmentToken());
     // Add the IP we are requesting from to the list of allowed IPs.
-    $this->setEnvironmentAllowedIps([$this->getCurrentHostIpAddress()]);
+    $this->setEnvironmentAllowedIps($this->getCurrentHostIpAddresses());
 
     // Generate a hash for the current time.
     $date = new DrupalDateTime('now', DateTimeItemInterface::STORAGE_TIMEZONE);
@@ -176,7 +175,7 @@ class DashboardAgentTest extends BrowserTestBase {
     // Set the correct token in the environment.
     $this->setEnvironmentToken($this->getEnvironmentToken());
     // Add the IP we are requesting from to the list of allowed IPs.
-    $this->setEnvironmentAllowedIps([$this->getCurrentHostIpAddress()]);
+    $this->setEnvironmentAllowedIps($this->getCurrentHostIpAddresses());
 
     // Generate a hash for the current time.
     $date = new DrupalDateTime('now', DateTimeItemInterface::STORAGE_TIMEZONE);
@@ -199,7 +198,7 @@ class DashboardAgentTest extends BrowserTestBase {
     // Set the correct token in the environment.
     $this->setEnvironmentToken($this->getEnvironmentToken());
     // Add the IP we are requesting from to the list of allowed IPs.
-    $this->setEnvironmentAllowedIps([$this->getCurrentHostIpAddress()]);
+    $this->setEnvironmentAllowedIps($this->getCurrentHostIpAddresses());
 
     // Generate a hash for the current time.
     $date = new DrupalDateTime('now', DateTimeItemInterface::STORAGE_TIMEZONE);
@@ -215,7 +214,10 @@ class DashboardAgentTest extends BrowserTestBase {
     $this->assertEquals('modules/custom/oe_dashboard_agent/oe_dashboard_agent.info.yml', $modules->oe_dashboard_agent->path);
     $this->assertEquals(TRUE, $modules->oe_dashboard_agent->installed);
     $this->assertEquals(8000, $modules->oe_dashboard_agent->schema_version);
-    $this->assertEquals(['datetime', 'field'], $modules->oe_dashboard_agent->requires);
+    $this->assertEquals([
+      'datetime',
+      'field',
+    ], $modules->oe_dashboard_agent->requires);
 
     // Assert a profile.
     $profiles = $extensions->profiles;
@@ -316,11 +318,12 @@ class DashboardAgentTest extends BrowserTestBase {
    * If the test is run from a virtual machine such as a Docker container, the
    * current host IP address is unreliable so we cannot hardcode it.
    *
-   * @return string
-   *   The IP address.
+   * @return array
+   *   The IP addresses.
    */
-  protected function getCurrentHostIpAddress(): string {
-    return trim(shell_exec('hostname -i'));
+  protected function getCurrentHostIpAddresses(): array {
+    $addresses = trim(shell_exec('hostname -i'));
+    return explode(' ', $addresses);
   }
 
   /**
