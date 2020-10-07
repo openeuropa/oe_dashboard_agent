@@ -23,6 +23,13 @@ function oe_dashboard_agent_requirements($phase) {
       'value' => $value ? t('Value set') : t('Value not set'),
       'severity' => REQUIREMENT_INFO,
     ];
+
+    $value = Settings::get('oe_dashboard_agent.allowed_ips', FALSE);
+    $requirements['oe_dashboard_agent.allowed_ips'] = [
+      'title' => t('Dashboard agent allowed IPs'),
+      'value' => $value ? implode(', ', $value) : t('Value not set'),
+      'severity' => REQUIREMENT_INFO,
+    ];
   }
 
   return $requirements;

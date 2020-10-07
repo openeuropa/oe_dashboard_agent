@@ -51,6 +51,15 @@ class DashboardAgentAccessCheck implements AccessInterface {
    *   The access result.
    */
   public function access(Route $route, RouteMatchInterface $route_match, Request $request): AccessResultInterface {
+    $allowed_ips = Settings::get('oe_dashboard_agent.allowed_ips');
+    if (!$allowed_ips) {
+      return AccessResult::forbidden()->setReason('The allowed IPs are not configured.')->setCacheMaxAge(0);
+    }
+
+    if (!in_array($request->getClientIp(), $allowed_ips)) {
+      return AccessResult::forbidden()->setReason('The request origin is not allowed.')->setCacheMaxAge(0);
+    }
+
     if (!$request->headers->has('NETOKEN')) {
       return AccessResult::forbidden()->setReason('The NETOKEN request header is missing')->setCacheMaxAge(0);
     }
