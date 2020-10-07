@@ -23,7 +23,7 @@ To set up this module within the European Commission, OpenEuropa-based infrastru
 
 ```
 $settings["oe_dashboard_agent.token"] = getenv('DASHBOARD_TOKEN');
-$settings["oe_dashboard_agent.allowed_ips"] = explode(',', getenv('DASHBOARD_ALLOWED_IPS');
+$settings["oe_dashboard_agent.allowed_ips"] = explode(',', getenv('DASHBOARD_ALLOWED_IPS'));
 ```
 
 ## Development setup
