@@ -198,7 +198,7 @@ class ExtensionsController extends ControllerBase {
 
     $file_content = file_get_contents($this->manifestFileLocation);
     if (!$file_content) {
-      $this->logger->warning('The manifest.json file count not be read.');
+      $this->logger->warning('The manifest.json file could not be read.');
       return;
     }
 
