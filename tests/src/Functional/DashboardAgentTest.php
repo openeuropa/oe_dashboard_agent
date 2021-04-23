@@ -102,7 +102,7 @@ class DashboardAgentTest extends BrowserTestBase {
       $this->setEnvironmentToken('');
       $this->drupalGet($url);
       $this->assertSession()->statusCodeEquals(403);
-      $this->assertDbLogMessage('access denied', 'The NETOKEN request header is missing');
+      $this->assertDbLogMessage('access denied', 'The NETOKEN request header is missing.');
 
       // Test that access is denied with no token in the environment.
       $this->drupalGet($url, [], ['NETOKEN' => $this->correctHash]);
@@ -419,7 +419,7 @@ class DashboardAgentTest extends BrowserTestBase {
     $cidr = [];
     foreach ($ips as $ip) {
       $parts = explode('.', $ip);
-      $last = array_pop($parts);
+      array_pop($parts);
       $parts[] = '0/24';
       $cidr[] = implode('.', $parts);
     }

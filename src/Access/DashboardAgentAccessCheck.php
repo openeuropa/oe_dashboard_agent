@@ -12,6 +12,7 @@ use Drupal\Core\Routing\Access\AccessInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Site\Settings;
 use Drupal\datetime\Plugin\Field\FieldType\DateTimeItemInterface;
+use Symfony\Component\HttpFoundation\IpUtils;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
 
@@ -56,12 +57,12 @@ class DashboardAgentAccessCheck implements AccessInterface {
       return AccessResult::forbidden()->setReason('The allowed IPs are not configured.')->setCacheMaxAge(0);
     }
 
-    if (!in_array($request->getClientIp(), $allowed_ips)) {
+    if (!IpUtils::checkIp($request->getClientIp(), $allowed_ips)) {
       return AccessResult::forbidden()->setReason('The request origin is not allowed.')->setCacheMaxAge(0);
     }
 
     if (!$request->headers->has('NETOKEN')) {
-      return AccessResult::forbidden()->setReason('The NETOKEN request header is missing')->setCacheMaxAge(0);
+      return AccessResult::forbidden()->setReason('The NETOKEN request header is missing.')->setCacheMaxAge(0);
     }
 
     $dashboard_token = Settings::get('oe_dashboard_agent.token');
