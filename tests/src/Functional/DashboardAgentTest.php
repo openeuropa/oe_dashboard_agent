@@ -41,16 +41,6 @@ class DashboardAgentTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
-    parent::setUp();
-
-    // Clear the watchdog.
-    $this->clearLogMessages();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function tearDown() {
     if (file_exists('../manifest.json')) {
       unlink('../manifest.json');
