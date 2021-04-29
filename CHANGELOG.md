@@ -1,11 +1,23 @@
 # Changelog
 
+## [0.2.0](https://github.com/openeuropa/oe_dashboard_agent/tree/0.2.0) (2021-04-29)
+
+[Full Changelog](https://github.com/openeuropa/oe_dashboard_agent/compare/0.1.0...0.2.0)
+
+**Merged pull requests:**
+
+- EWPP-939: CIDR notation for the IP access. [\#11](https://github.com/openeuropa/oe_dashboard_agent/pull/11) ([upchuk](https://github.com/upchuk))
+- EWPP-721: Update xdebug configuration. [\#10](https://github.com/openeuropa/oe_dashboard_agent/pull/10) ([22Alexandra](https://github.com/22Alexandra))
+- EWPP-529: Replace scaffold library. [\#8](https://github.com/openeuropa/oe_dashboard_agent/pull/8) ([sergepavle](https://github.com/sergepavle))
+- EWPP-516: Update docker images. [\#7](https://github.com/openeuropa/oe_dashboard_agent/pull/7) ([22Alexandra](https://github.com/22Alexandra))
+
 ## [0.1.0](https://github.com/openeuropa/oe_dashboard_agent/tree/0.1.0) (2020-10-09)
 
 [Full Changelog](https://github.com/openeuropa/oe_dashboard_agent/compare/eb7b10fb7ccc8c46d40dceaed2c685177929f4af...0.1.0)
 
 **Merged pull requests:**
 
+- Release-0.1.0: Update changelog. [\#6](https://github.com/openeuropa/oe_dashboard_agent/pull/6) ([nagyad](https://github.com/nagyad))
 - EWPP-363: IP whitelisting [\#5](https://github.com/openeuropa/oe_dashboard_agent/pull/5) ([upchuk](https://github.com/upchuk))
 - EWPP-103: Add dashboard uli endpoint. [\#4](https://github.com/openeuropa/oe_dashboard_agent/pull/4) ([22Alexandra](https://github.com/22Alexandra))
 - EWPP-101: Create access checker service. [\#3](https://github.com/openeuropa/oe_dashboard_agent/pull/3) ([nagyad](https://github.com/nagyad))
