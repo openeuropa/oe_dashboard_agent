@@ -39,26 +39,6 @@ class DashboardAgentTest extends BrowserTestBase {
   protected $correctHash = 'imx70870cce44daa1745b2af95ed6b374ed41cd2e809176c7c0fe8c06e337fd29f2cc2cf413b55540be168c1776fff631e259bbb87f7840897c73f0551086584cf1d';
 
   /**
-   * The admin user.
-   *
-   * @var \Drupal\user\UserInterface
-   */
-  protected $adminUser;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp() {
-    parent::setUp();
-
-    $this->adminUser = $this->drupalCreateUser([
-      'administer site configuration',
-      'access administration pages',
-      'access site reports',
-    ]);
-  }
-
-  /**
    * {@inheritdoc}
    */
   protected function tearDown() {
@@ -88,42 +68,76 @@ class DashboardAgentTest extends BrowserTestBase {
       $this->setEnvironmentAllowedIps([]);
       $this->drupalGet($url);
       $this->assertSession()->statusCodeEquals(403);
+      $this->assertDbLogMessage('access denied', 'The allowed IPs are not configured.');
 
       // Test that access is denied with wrong IP.
-      $this->setEnvironmentAllowedIps(['10.10.10.10']);
-      $this->drupalGet($url);
-      $this->assertSession()->statusCodeEquals(403);
+      $disallowed_ip_combinations = [
+        ['10.10.10.10'],
+        ['10.10.10.0/24'],
+        ['10.10.10.10', '10.50.50.20'],
+        ['10.10.10.0/24', '10.50.50.0/16'],
+        ['10.10.10.0/24', '10.50.50.20'],
+      ];
+      foreach ($disallowed_ip_combinations as $combination) {
+        $this->setEnvironmentAllowedIps($combination);
+        $this->drupalGet($url);
+        $this->assertSession()->statusCodeEquals(403);
+        $this->assertDbLogMessage('access denied', 'The request origin is not allowed.');
+      }
 
-      // Test that access is denied with wrong IP.
-      $this->setEnvironmentAllowedIps(['10.10.10.10', '192.5.6.8']);
-      $this->drupalGet($url);
-      $this->assertSession()->statusCodeEquals(403);
-
-      // Add the IP we are requesting from to the list of allowed IPs.
+      // Set an allowed IP address.
       $this->setEnvironmentAllowedIps($this->getCurrentHostIpAddresses());
 
       // Test that access is denied with no hash in header.
       $this->setEnvironmentToken('');
       $this->drupalGet($url);
       $this->assertSession()->statusCodeEquals(403);
+      $this->assertDbLogMessage('access denied', 'The NETOKEN request header is missing.');
 
       // Test that access is denied with no token in the environment.
       $this->drupalGet($url, [], ['NETOKEN' => $this->correctHash]);
       $this->assertSession()->statusCodeEquals(403);
+      $this->assertDbLogMessage('access denied', 'Missing dashboard token. See installation instructions.');
 
       // Test that access is denied with a wrong token in the environment.
       $this->setEnvironmentToken('wrong-token');
       $this->drupalGet($url, [], ['NETOKEN' => $this->correctHash]);
       $this->assertSession()->statusCodeEquals(403);
+      $this->assertDbLogMessage('access denied', 'The NETOKEN request header is incorrect.');
 
       // Test that access is denied with incorrect hash in header.
       $this->drupalGet($url, [], ['NETOKEN' => '70870cce44daa1745b2af95ed6b374ed41cd2e809176c7c0fe8c06e337fd29f2cc2cf413b55540be168c1776fff631e259bbb87f7840897c73f0551086584cf1d']);
       $this->assertSession()->statusCodeEquals(403);
+      $this->assertDbLogMessage('access denied', 'The NETOKEN request header is incorrect.');
 
       // Set a correct token in the environment.
       $this->setEnvironmentToken($this->getEnvironmentToken());
 
       // Test that access is granted with a correct hash in header.
+      $this->drupalGet($url, [], ['NETOKEN' => $this->correctHash]);
+      $this->assertSession()->statusCodeEquals(200);
+
+      // Remove IPs for confirmation of failure before testing CIDR notation.
+      $this->setEnvironmentAllowedIps([]);
+      $this->drupalGet($url, [], ['NETOKEN' => $this->correctHash]);
+      $this->assertSession()->statusCodeEquals(403);
+      $this->assertDbLogMessage('access denied', 'The allowed IPs are not configured.');
+
+      // Set a correct IP subnet in CIDR notation to test we do have access.
+      $this->setEnvironmentAllowedIps($this->getCurrentHostIpSubnet());
+      $this->drupalGet($url, [], ['NETOKEN' => $this->correctHash]);
+      $this->assertSession()->statusCodeEquals(200);
+
+      // Mix IP with subnet (correct subnet + correct IP).
+      $this->setEnvironmentAllowedIps(array_merge($this->getCurrentHostIpSubnet(), $this->getCurrentHostIpAddresses()));
+      $this->drupalGet($url, [], ['NETOKEN' => $this->correctHash]);
+      $this->assertSession()->statusCodeEquals(200);
+      // Mix IP with subnet (correct subnet + incorrect IP).
+      $this->setEnvironmentAllowedIps(array_merge($this->getCurrentHostIpSubnet(), ['10.10.12.34']));
+      $this->drupalGet($url, [], ['NETOKEN' => $this->correctHash]);
+      $this->assertSession()->statusCodeEquals(200);
+      // Mix IP with subnet (incorrect subnet + correct IP).
+      $this->setEnvironmentAllowedIps(array_merge($this->getCurrentHostIpAddresses(), ['10.10.10.0/24']));
       $this->drupalGet($url, [], ['NETOKEN' => $this->correctHash]);
       $this->assertSession()->statusCodeEquals(200);
     }
@@ -162,9 +176,11 @@ class DashboardAgentTest extends BrowserTestBase {
 
       $this->drupalGet($url, [], ['NETOKEN' => $yesterday_hash]);
       $this->assertSession()->statusCodeEquals(403);
+      $this->assertDbLogMessage('access denied', 'The NETOKEN request header is incorrect.');
 
       $this->drupalGet($url, [], ['NETOKEN' => $tomorrow_hash]);
       $this->assertSession()->statusCodeEquals(403);
+      $this->assertDbLogMessage('access denied', 'The NETOKEN request header is incorrect.');
     }
   }
 
@@ -239,6 +255,9 @@ class DashboardAgentTest extends BrowserTestBase {
     $this->assertEquals(\Drupal::VERSION, $extensions->drupal_version);
     $this->assertContains('php_version', array_keys((array) $extensions));
 
+    // Clear the logs as we are making another request.
+    $this->clearLogMessages();
+
     // Assert that we can alter the information.
     $this->assertNotContains('oe_dashboard_agent_test.extensions_alter', array_keys((array) $extensions));
     \Drupal::state()->set('oe_dashboard_agent_test.extensions_alter', 'altered');
@@ -246,38 +265,89 @@ class DashboardAgentTest extends BrowserTestBase {
     $this->assertContains('oe_dashboard_agent_test.extensions_alter', array_keys((array) $extensions));
 
     // The manifest.json file is missing.
-    $this->drupalLogin($this->adminUser);
-    $this->drupalGet('admin/reports/dblog');
-    $this->assertSession()->pageTextContains('The manifest.json file was not found.');
-    $this->assertSession()->pageTextNotContains('The manifest.json file count not be read.');
-    $this->clearLogMessages();
+    $this->assertDbLogMessage('dashboard_agent', [
+      'The manifest.json file was not found.',
+      'The list of extensions was requested.',
+    ]);
 
     // Create an empty/invalid file in the expected location.
     file_put_contents('../manifest.json', FALSE);
     $this->requestExtensions($hash);
-    $this->drupalGet('admin/reports/dblog');
-    $this->assertSession()->pageTextNotContains('The manifest.json file was not found.');
-    $this->assertSession()->pageTextContains('The manifest.json file count not be read.');
-    $this->clearLogMessages();
+    $this->assertDbLogMessage('dashboard_agent', [
+      'The manifest.json file could not be read.',
+      'The list of extensions was requested.',
+    ]);
 
     // Create an non-json file in the expected location.
     file_put_contents('../manifest.json', 'Not json');
     $this->requestExtensions($hash);
-    $this->drupalGet('admin/reports/dblog');
-    $this->assertSession()->pageTextNotContains('The manifest.json file was not found.');
-    $this->assertSession()->pageTextNotContains('The manifest.json file count not be read.');
-    $this->assertSession()->pageTextContains('The manifest.json file could not be decoded.');
-    $this->clearLogMessages();
+    $this->assertDbLogMessage('dashboard_agent', [
+      'The manifest.json file could not be decoded.',
+      'The list of extensions was requested.',
+    ]);
 
     // Move the correct JSON file.
     file_put_contents('../manifest.json', file_get_contents(drupal_get_path('module', 'oe_dashboard_agent') . '/tests/fixtures/manifest.json'));
     $extensions = $this->requestExtensions($hash);
-    $this->drupalGet('admin/reports/dblog');
-    $this->assertSession()->pageTextNotContains('The manifest.json file was not found.');
-    $this->assertSession()->pageTextNotContains('The manifest.json file count not be read.');
-    $this->assertSession()->pageTextNotContains('The manifest.json file could not be decoded.');
+    $this->assertDbLogMessage('dashboard_agent', 'The list of extensions was requested.');
     $this->assertEquals('0.5', $extensions->site_version);
     $this->assertEquals('dfs6dfwu34yr32423e23', $extensions->site_commit);
+  }
+
+  /**
+   * Asserts that we have the expected DB log access message.
+   *
+   * @param string $type
+   *   The type of message.
+   * @param string|array $messages
+   *   The expected message(s).
+   */
+  protected function assertDbLogMessage(string $type, $messages): void {
+    if (is_string($messages)) {
+      $messages = [$messages];
+    }
+
+    $records = \Drupal::database()
+      ->select('watchdog')
+      ->fields('watchdog', ['variables', 'message'])
+      ->condition('type', $type)
+      ->execute()
+      ->fetchAll();
+
+    // Clear the table for the next assertions.
+    $this->clearLogMessages();
+    $this->assertCount(count($messages), $records);
+
+    // Extract the logged messages depending on the type of log.
+    $logs = [];
+    foreach ($records as $record) {
+      switch ($type) {
+        case 'access denied':
+          $variables = unserialize($record->variables);
+          $logs[] = $variables['@message'];
+          break;
+
+        default:
+          $logs[] = $record->message;
+          break;
+      }
+    }
+
+    sort($messages);
+    sort($logs);
+    $this->assertEquals($messages, $logs);
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Wrapper around the core drupalGet so that we can reset the session before
+   * each run. This is needed because if we make two subsequent requests with
+   * different headers, the passed headers in the request will be cached (?).
+   */
+  protected function drupalGet($path, array $options = [], array $headers = []) {
+    $this->getSession()->reset();
+    return parent::drupalGet($path, $options, $headers);
   }
 
   /**
@@ -324,6 +394,27 @@ class DashboardAgentTest extends BrowserTestBase {
   protected function getCurrentHostIpAddresses(): array {
     $addresses = trim(shell_exec('hostname -i'));
     return explode(' ', $addresses);
+  }
+
+  /**
+   * Returns the IP address subnet of the current host.
+   *
+   * Using the current IP address, construct the subnet.
+   *
+   * @return array
+   *   The IP subnets in CIDR notation.
+   */
+  protected function getCurrentHostIpSubnet() {
+    $ips = $this->getCurrentHostIpAddresses();
+    $cidr = [];
+    foreach ($ips as $ip) {
+      $parts = explode('.', $ip);
+      array_pop($parts);
+      $parts[] = '0/24';
+      $cidr[] = implode('.', $parts);
+    }
+
+    return $cidr;
   }
 
   /**
@@ -387,8 +478,7 @@ class DashboardAgentTest extends BrowserTestBase {
    * Clears the DB log messages.
    */
   protected function clearLogMessages(): void {
-    $this->drupalGet(Url::fromRoute('dblog.confirm'));
-    $this->drupalPostForm(NULL, [], 'Confirm');
+    \Drupal::database()->truncate('watchdog')->execute();
   }
 
 }
