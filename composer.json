@@ -11,14 +11,14 @@
     },
     "require-dev": {
         "composer/installers": "~1.5",
-        "drupal/core-composer-scaffold": "^8.9 || ^9",
+        "drupal/core-composer-scaffold": "^8.9 || ^9.1",
         "drupal/config_devel": "~1.2",
         "drupal/datetime_testing": "dev-3217303-drupal-9-compatibility",
         "drupal/drupal-extension": "~4.0",
-        "drush/drush": "^10.3",
+        "drush/drush": "~10.3",
         "openeuropa/code-review": "~1.6",
         "phpspec/prophecy-phpunit": "^1 || ^2",
-        "openeuropa/drupal-core-require-dev": "^8.9 || ^9",
+        "openeuropa/drupal-core-require-dev": "^8.9 || ^9.1",
         "openeuropa/task-runner-drupal-project-symlink": "^1.0"
     },
     "_readme": [
