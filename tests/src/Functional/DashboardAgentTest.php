@@ -41,7 +41,7 @@ class DashboardAgentTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     if (file_exists('../manifest.json')) {
       unlink('../manifest.json');
     }
