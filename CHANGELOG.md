@@ -1,11 +1,18 @@
-# Changelog
+# Change Log
+
+## [0.3.0](https://github.com/openeuropa/oe_dashboard_agent/tree/0.3.0) (2021-08-12)
+[Full Changelog](https://github.com/openeuropa/oe_dashboard_agent/compare/0.2.0...0.3.0)
+
+**Merged pull requests:**
+
+- EWPP-1076: Drupal 9 compatibility fixes. [\#13](https://github.com/openeuropa/oe_dashboard_agent/pull/13) ([GilNovacomm](https://github.com/GilNovacomm))
 
 ## [0.2.0](https://github.com/openeuropa/oe_dashboard_agent/tree/0.2.0) (2021-04-29)
-
 [Full Changelog](https://github.com/openeuropa/oe_dashboard_agent/compare/0.1.0...0.2.0)
 
 **Merged pull requests:**
 
+- Prepare release 0.2.0. [\#12](https://github.com/openeuropa/oe_dashboard_agent/pull/12) ([imanoleguskiza](https://github.com/imanoleguskiza))
 - EWPP-939: CIDR notation for the IP access. [\#11](https://github.com/openeuropa/oe_dashboard_agent/pull/11) ([upchuk](https://github.com/upchuk))
 - EWPP-721: Update xdebug configuration. [\#10](https://github.com/openeuropa/oe_dashboard_agent/pull/10) ([22Alexandra](https://github.com/22Alexandra))
 - EWPP-529: Replace scaffold library. [\#8](https://github.com/openeuropa/oe_dashboard_agent/pull/8) ([sergepavle](https://github.com/sergepavle))
