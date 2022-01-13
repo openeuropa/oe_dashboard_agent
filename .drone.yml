@@ -17,6 +17,7 @@ services:
     image: registry.fpfis.eu/fpfis/httpd-php:${PHP_VERSION}-ci
     environment:
       - DOCUMENT_ROOT=/test/oe_dashboard_agent
+      - COMPOSERVER=--2
   mysql:
     image: registry.fpfis.eu/fpfis/sql:percona-5.7
     command: --innodb-log-file-size=1G --max_allowed_packet=1G --innodb-buffer-pool-size=512M --wait_timeout=3000 --net_write_timeout=3000 --log_error_verbosity=3
@@ -24,23 +25,26 @@ services:
       - MYSQL_ALLOW_EMPTY_PASSWORD=yes
 
 pipeline:
-  composer-install:
+  composer-install-highest:
     group: prepare
     image: registry.fpfis.eu/fpfis/httpd-php:${PHP_VERSION}-ci
     volumes:
       - /cache:/cache
     commands:
-      - composer install --ansi --no-suggest --no-progress
+      - composer self-update --2
+      - composer install --ansi --no-progress
+    when:
+      matrix:
+        COMPOSER_BOUNDARY: highest
 
   composer-update-lowest:
-    group: post-prepare
+    group: prepare
     image: registry.fpfis.eu/fpfis/httpd-php:${PHP_VERSION}-ci
     volumes:
       - /cache:/cache
     commands:
-      # @todo remove "composer install" step once the following issue is fixed.
-      # @link https://webgate.ec.europa.eu/CITnet/jira/browse/OPENEUROPA-1234
-      - composer update --prefer-lowest --prefer-stable --ansi --no-suggest --no-progress
+      - composer self-update --2
+      - composer update --prefer-lowest --prefer-stable --ansi --no-progress
     when:
       matrix:
         COMPOSER_BOUNDARY: lowest
