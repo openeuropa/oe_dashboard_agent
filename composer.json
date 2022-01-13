@@ -12,6 +12,7 @@
     "require-dev": {
         "composer/installers": "~1.11",
         "drupal/core-composer-scaffold": "^9.2",
+        "drupal/core-dev": "^9.2",
         "drupal/config_devel": "~1.2",
         "drupal/datetime_testing": "1.x-dev",
         "drupal/drupal-extension": "^4.0",
@@ -19,7 +20,6 @@
         "egulias/email-validator": "^2.1.22 || ^3.0",
         "openeuropa/code-review": "^2.0",
         "phpspec/prophecy-phpunit": "^1 || ^2",
-        "openeuropa/drupal-core-require-dev": "^9.2",
         "openeuropa/task-runner-drupal-project-symlink": "dev-EWPP-1884"
     },
     "_readme": [
