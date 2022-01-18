@@ -20,7 +20,7 @@
         "egulias/email-validator": "^2.1.22 || ^3.0",
         "openeuropa/code-review": "^2.0",
         "phpspec/prophecy-phpunit": "^1 || ^2",
-        "openeuropa/task-runner-drupal-project-symlink": "dev-EWPP-1884"
+        "openeuropa/task-runner-drupal-project-symlink": "^1.0.0-beta5"
     },
     "_readme": [
         "Explicit requirement for egulias/email-validator due to https://www.drupal.org/project/drupal/issues/3061074#comment-14300579. It can be removed when Drupal core 9.2 support is droppped."

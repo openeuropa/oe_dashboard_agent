@@ -1,5 +1,12 @@
 # Change Log
 
+## [0.4.0](https://github.com/openeuropa/oe_dashboard_agent/tree/0.4.0) (2022-01-18)
+[Full Changelog](https://github.com/openeuropa/oe_dashboard_agent/compare/0.3.0...0.4.0)
+
+**Merged pull requests:**
+
+- EWPP-1892: Update to PHP 7.4/8.0. [\#15](https://github.com/openeuropa/oe_dashboard_agent/pull/15) ([mferran-europe](https://github.com/mferran-europe))
+
 ## [0.3.0](https://github.com/openeuropa/oe_dashboard_agent/tree/0.3.0) (2021-08-12)
 [Full Changelog](https://github.com/openeuropa/oe_dashboard_agent/compare/0.2.0...0.3.0)
 
