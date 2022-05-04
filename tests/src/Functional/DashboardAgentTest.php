@@ -295,6 +295,26 @@ class DashboardAgentTest extends BrowserTestBase {
   }
 
   /**
+   * Tests that the status page returns.
+   */
+  public function testStatusPage() {
+    $admin_user = $this->drupalCreateUser([
+      'administer site configuration',
+    ]);
+    $this->drupalLogin($admin_user);
+    // We should keep session since authorised user is used,
+    // so use parent drupalGet().
+    parent::drupalGet('admin/reports/status');
+    $this->assertSession()->elementTextEquals('css', "details.system-status-report__entry summary:contains('Site version') + div", 'Value not set');
+
+    // Show the site version from the manifest file.
+    $module_path = \Drupal::service('extension.list.module')->getPath('oe_dashboard_agent');
+    file_put_contents('../manifest.json', file_get_contents($module_path . '/tests/fixtures/manifest.json'));
+    parent::drupalGet('admin/reports/status');
+    $this->assertSession()->elementTextEquals('css', "details.system-status-report__entry summary:contains('Site version') + div", '0.5');
+  }
+
+  /**
    * Asserts that we have the expected DB log access message.
    *
    * @param string $type

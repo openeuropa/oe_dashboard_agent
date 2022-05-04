@@ -8,6 +8,7 @@
 declare(strict_types = 1);
 
 use Drupal\Core\Site\Settings;
+use Drupal\oe_dashboard_agent\ManifestFileReader;
 
 /**
  * Implements hook_requirements().
@@ -28,6 +29,14 @@ function oe_dashboard_agent_requirements($phase) {
     $requirements['oe_dashboard_agent.allowed_ips'] = [
       'title' => t('Dashboard agent allowed IPs'),
       'value' => $value ? implode(', ', $value) : t('Value not set'),
+      'severity' => REQUIREMENT_INFO,
+    ];
+
+    $manifest_reader = \Drupal::classResolver()->getInstanceFromDefinition(ManifestFileReader::class);
+    $manifest = $manifest_reader->getData();
+    $requirements['oe_dashboard_agent.site_version'] = [
+      'title' => t('Site version'),
+      'value' => $manifest['version'] ?? t('Value not set'),
       'severity' => REQUIREMENT_INFO,
     ];
   }

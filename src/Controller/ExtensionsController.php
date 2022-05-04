@@ -5,10 +5,12 @@ declare(strict_types = 1);
 namespace Drupal\oe_dashboard_agent\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\DependencyInjection\ClassResolverInterface;
 use Drupal\Core\Extension\InfoParserException;
 use Drupal\Core\Extension\ModuleExtensionList;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\oe_dashboard_agent\ManifestFileReader;
 use Drupal\oe_dashboard_agent\Event\ExtensionsInfoAlterEvent;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -48,11 +50,11 @@ class ExtensionsController extends ControllerBase {
   protected $eventDispatcher;
 
   /**
-   * The location of the manifest file.
+   * The class resolver.
    *
-   * @var string
+   * @var \Drupal\Core\DependencyInjection\ClassResolverInterface
    */
-  protected $manifestFileLocation;
+  protected $classResolver;
 
   /**
    * ExtensionsController constructor.
@@ -65,15 +67,15 @@ class ExtensionsController extends ControllerBase {
    *   The logger service.
    * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
    *   The event dispatcher.
-   * @param string $manifest_file_location
+   * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $class_resolver
    *   The location of the manifest file.
    */
-  public function __construct(ModuleExtensionList $extension_list_module, ThemeHandlerInterface $theme_handler, LoggerChannelFactoryInterface $logger_factory, EventDispatcherInterface $eventDispatcher, string $manifest_file_location) {
+  public function __construct(ModuleExtensionList $extension_list_module, ThemeHandlerInterface $theme_handler, LoggerChannelFactoryInterface $logger_factory, EventDispatcherInterface $eventDispatcher, ClassResolverInterface $class_resolver) {
     $this->moduleExtensionList = $extension_list_module;
     $this->themeHandler = $theme_handler;
     $this->logger = $logger_factory->get('dashboard_agent');
     $this->eventDispatcher = $eventDispatcher;
-    $this->manifestFileLocation = $manifest_file_location;
+    $this->classResolver = $class_resolver;
   }
 
   /**
@@ -85,7 +87,7 @@ class ExtensionsController extends ControllerBase {
       $container->get('theme_handler'),
       $container->get('logger.factory'),
       $container->get('event_dispatcher'),
-      $container->getParameter('oe_dashboard_agent.manifest_file_location')
+      $container->get('class_resolver')
     );
   }
 
@@ -126,7 +128,7 @@ class ExtensionsController extends ControllerBase {
 
     // Retrieve modules and profiles information.
     foreach ($extensions as $extension_name => $extension) {
-      $package = isset($extension->info['package']) ? $extension->info['package'] : '';
+      $package = $extension->info['package'] ?? '';
       // Skip testing and core experimental modules.
       if ($package === 'Testing' || $package === 'Core (Experimental)') {
         continue;
@@ -136,7 +138,7 @@ class ExtensionsController extends ControllerBase {
         $info['profiles'][$extension_name] = [
           'name' => $extension->info['name'],
           'package' => $package,
-          'version' => isset($extension->info['version']) ? $extension->info['version'] : '',
+          'version' => $extension->info['version'] ?? '',
           'path' => $extension->getPathname(),
           'installed' => (bool) $extension->status,
           'requires' => array_keys($extension->requires) ? array_keys($extension->requires) : '',
@@ -146,7 +148,7 @@ class ExtensionsController extends ControllerBase {
       $info['modules'][$extension_name] = [
         'name' => $extension->info['name'],
         'package' => $package ? $package : '',
-        'version' => isset($extension->info['version']) ? $extension->info['version'] : '',
+        'version' => $extension->info['version'] ?? '',
         'path' => $extension->getPathname(),
         'installed' => (bool) $extension->status,
         'requires' => array_keys($extension->requires) ? array_keys($extension->requires) : '',
@@ -156,7 +158,7 @@ class ExtensionsController extends ControllerBase {
 
     // Retrieve themes information.
     foreach ($themes as $theme_name => $theme) {
-      $package = isset($theme->info['package']) ? $theme->info['package'] : '';
+      $package = $theme->info['package'] ?? '';
       // Skip test themes.
       if ($package === 'Testing') {
         continue;
@@ -164,7 +166,7 @@ class ExtensionsController extends ControllerBase {
       $info['themes'][$theme_name] = [
         'name' => $theme->info['name'],
         'package' => $package ? $package : '',
-        'version' => isset($theme->info['version']) ? $theme->info['version'] : '',
+        'version' => $theme->info['version'] ?? '',
         'path' => $theme->getPathname(),
         'installed' => (bool) $theme->status,
         'default' => ($theme_name === $theme_default),
@@ -191,25 +193,12 @@ class ExtensionsController extends ControllerBase {
    *   The extensions info.
    */
   protected function addSiteVersion(array &$info): void {
-    if (!file_exists($this->manifestFileLocation) || !is_readable($this->manifestFileLocation)) {
-      $this->logger->warning('The manifest.json file was not found.');
-      return;
+    $manifest_reader = $this->classResolver->getInstanceFromDefinition(ManifestFileReader::class);
+    $manifest = $manifest_reader->getData();
+    if ($manifest) {
+      $info['site_version'] = $manifest['version'];
+      $info['site_commit'] = $manifest['sha'] ?? '';
     }
-
-    $file_content = file_get_contents($this->manifestFileLocation);
-    if (!$file_content) {
-      $this->logger->warning('The manifest.json file could not be read.');
-      return;
-    }
-
-    $manifest = json_decode($file_content, TRUE);
-    if (!$manifest) {
-      $this->logger->warning('The manifest.json file could not be decoded.');
-      return;
-    }
-
-    $info['site_version'] = $manifest['version'];
-    $info['site_commit'] = isset($manifest['sha']) ? $manifest['sha'] : '';
   }
 
 }
