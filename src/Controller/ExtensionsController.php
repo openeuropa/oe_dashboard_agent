@@ -126,7 +126,7 @@ class ExtensionsController extends ControllerBase {
 
     // Retrieve modules and profiles information.
     foreach ($extensions as $extension_name => $extension) {
-      $package = isset($extension->info['package']) ? $extension->info['package'] : '';
+      $package = $extension->info['package'] ?? '';
       // Skip testing and core experimental modules.
       if ($package === 'Testing' || $package === 'Core (Experimental)') {
         continue;
@@ -136,7 +136,7 @@ class ExtensionsController extends ControllerBase {
         $info['profiles'][$extension_name] = [
           'name' => $extension->info['name'],
           'package' => $package,
-          'version' => isset($extension->info['version']) ? $extension->info['version'] : '',
+          'version' => $extension->info['version'] ?? '',
           'path' => $extension->getPathname(),
           'installed' => (bool) $extension->status,
           'requires' => array_keys($extension->requires) ? array_keys($extension->requires) : '',
@@ -146,7 +146,7 @@ class ExtensionsController extends ControllerBase {
       $info['modules'][$extension_name] = [
         'name' => $extension->info['name'],
         'package' => $package ? $package : '',
-        'version' => isset($extension->info['version']) ? $extension->info['version'] : '',
+        'version' => $extension->info['version'] ?? '',
         'path' => $extension->getPathname(),
         'installed' => (bool) $extension->status,
         'requires' => array_keys($extension->requires) ? array_keys($extension->requires) : '',
@@ -156,7 +156,7 @@ class ExtensionsController extends ControllerBase {
 
     // Retrieve themes information.
     foreach ($themes as $theme_name => $theme) {
-      $package = isset($theme->info['package']) ? $theme->info['package'] : '';
+      $package = $theme->info['package'] ?? '';
       // Skip test themes.
       if ($package === 'Testing') {
         continue;
@@ -164,7 +164,7 @@ class ExtensionsController extends ControllerBase {
       $info['themes'][$theme_name] = [
         'name' => $theme->info['name'],
         'package' => $package ? $package : '',
-        'version' => isset($theme->info['version']) ? $theme->info['version'] : '',
+        'version' => $theme->info['version'] ?? '',
         'path' => $theme->getPathname(),
         'installed' => (bool) $theme->status,
         'default' => ($theme_name === $theme_default),
@@ -209,7 +209,7 @@ class ExtensionsController extends ControllerBase {
     }
 
     $info['site_version'] = $manifest['version'];
-    $info['site_commit'] = isset($manifest['sha']) ? $manifest['sha'] : '';
+    $info['site_commit'] = $manifest['sha'] ?? '';
   }
 
 }
