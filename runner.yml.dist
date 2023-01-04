@@ -36,7 +36,6 @@ commands:
     - { task: "run", command: "drupal:drush-setup" }
     - { task: "run", command: "drupal:settings-setup" }
     - { task: "run", command: "setup:phpunit" }
-    - { task: "run", command: "setup:behat" }
     - task: "append"
       file: "build/sites/default/settings.override.php"
       text: |
@@ -45,5 +44,3 @@ commands:
     - { task: "process-php", type: "write", config: "drupal.settings", source: "${drupal.root}/sites/default/default.settings.php", destination: "${drupal.root}/sites/default/settings.testing.php", override: true }
   setup:phpunit:
     - { task: "process", source: "phpunit.xml.dist", destination: "phpunit.xml" }
-  setup:behat:
-    - { task: "process", source: "behat.yml.dist", destination: "behat.yml" }
