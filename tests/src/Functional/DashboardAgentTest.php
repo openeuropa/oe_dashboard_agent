@@ -204,7 +204,7 @@ class DashboardAgentTest extends BrowserTestBase {
 
     // Access the ULI and assert we got logged in.
     $this->drupalGet($uli);
-    $this->assertSession()->pageTextContains('You have just used your one-time login link. It is no longer necessary to use this link to log in. Please change your password.');
+    $this->assertSession()->pageTextContains('You have just used your one-time login link. It is no longer necessary to use this link to log in.');
   }
 
   /**
