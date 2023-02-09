@@ -4,7 +4,7 @@ declare(strict_types = 1);
 
 namespace Drupal\oe_dashboard_agent\Event;
 
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * Event dispatched to alter the extensions info returned by the agent.

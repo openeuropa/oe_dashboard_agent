@@ -287,7 +287,7 @@ class DashboardAgentTest extends BrowserTestBase {
     ]);
 
     // Move the correct JSON file.
-    file_put_contents('../manifest.json', file_get_contents(drupal_get_path('module', 'oe_dashboard_agent') . '/tests/fixtures/manifest.json'));
+    file_put_contents('../manifest.json', file_get_contents(\Drupal::service('extension.list.module')->getPath('oe_dashboard_agent') . '/tests/fixtures/manifest.json'));
     $extensions = $this->requestExtensions($hash);
     $this->assertDbLogMessage('dashboard_agent', 'The list of extensions was requested.');
     $this->assertEquals('0.5', $extensions->site_version);
