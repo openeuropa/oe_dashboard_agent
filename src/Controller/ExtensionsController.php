@@ -7,6 +7,7 @@ namespace Drupal\oe_dashboard_agent\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Extension\InfoParserException;
 use Drupal\Core\Extension\ModuleExtensionList;
+use Drupal\Core\Extension\ThemeExtensionList;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Update\UpdateHookRegistry;
@@ -112,7 +113,7 @@ class ExtensionsController extends ControllerBase {
     try {
       $extensions = $this->moduleExtensionList->reset()->getList();
       // Sort modules by name.
-      uasort($extensions, 'system_sort_modules_by_info_name');
+      uasort($extensions, [ModuleExtensionList::class, 'sortByName']);
     }
     catch (InfoParserException $e) {
       $this->logger->warning($this->t('Extensions could not be listed due to an error: %error', ['%error' => $e->getMessage()]));
@@ -123,7 +124,7 @@ class ExtensionsController extends ControllerBase {
     try {
       $themes = $this->themeHandler->rebuildThemeData();
       // Sort themes by name.
-      uasort($themes, 'system_sort_modules_by_info_name');
+      uasort($themes, [ThemeExtensionList::class, 'sortByName']);
     }
     catch (InfoParserException $e) {
       $this->logger->warning($this->t('Themes could not be listed due to an error: %error', ['%error' => $e->getMessage()]));
