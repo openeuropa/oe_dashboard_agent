@@ -2,7 +2,7 @@ name: OpenEuropa Dashboard Agent Test
 type: module
 description: 'Support testing the dashboard agent.'
 package: Testing
-core_version_requirement: ^9.5 || ^10
+core_version_requirement: ^9.4 || ^10
 
 dependencies:
   - oe_dashboard_agent:oe_dashboard_agent
