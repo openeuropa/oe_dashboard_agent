@@ -1,7 +1,14 @@
 # Changelog
 
-## [0.5.0](https://github.com/openeuropa/oe_dashboard_agent/tree/0.5.0) (2022-07-29)
+## [1.0.0](https://github.com/openeuropa/oe_dashboard_agent/tree/1.0.0) (2023-02-22)
+[Full Changelog](https://github.com/openeuropa/oe_dashboard_agent/compare/0.5.0...1.0.0)
 
+**Merged pull requests:**
+
+- EWPP-2986: Drupal 10 compatibility. [\#21](https://github.com/openeuropa/oe_dashboard_agent/pull/21) ([brummbar](https://github.com/brummbar))
+- OEL-2115: Update to PHP 8.1 [\#20](https://github.com/openeuropa/oe_dashboard_agent/pull/20) ([brummbar](https://github.com/brummbar))
+
+## [0.5.0](https://github.com/openeuropa/oe_dashboard_agent/tree/0.5.0) (2022-08-02)
 [Full Changelog](https://github.com/openeuropa/oe_dashboard_agent/compare/0.4.0...0.5.0)
 
 **Merged pull requests:**
