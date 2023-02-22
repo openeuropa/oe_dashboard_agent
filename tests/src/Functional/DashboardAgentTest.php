@@ -245,11 +245,11 @@ class DashboardAgentTest extends BrowserTestBase {
 
     // Assert a theme.
     $themes = $extensions->themes;
-    $this->assertEquals('Bartik', $themes->bartik->name);
-    $this->assertEquals('Core', $themes->bartik->package);
-    $this->assertEquals('core/themes/bartik/bartik.info.yml', $themes->bartik->path);
-    $this->assertEquals(FALSE, $themes->bartik->installed);
-    $this->assertEquals(FALSE, $themes->bartik->default);
+    $this->assertEquals('Olivero', $themes->olivero->name);
+    $this->assertEquals('Core', $themes->olivero->package);
+    $this->assertEquals('core/themes/olivero/olivero.info.yml', $themes->olivero->path);
+    $this->assertEquals(FALSE, $themes->olivero->installed);
+    $this->assertEquals(FALSE, $themes->olivero->default);
 
     // Assert the Drupal version.
     $this->assertEquals(\Drupal::VERSION, $extensions->drupal_version);
@@ -287,7 +287,7 @@ class DashboardAgentTest extends BrowserTestBase {
     ]);
 
     // Move the correct JSON file.
-    file_put_contents('../manifest.json', file_get_contents(drupal_get_path('module', 'oe_dashboard_agent') . '/tests/fixtures/manifest.json'));
+    file_put_contents('../manifest.json', file_get_contents(\Drupal::service('extension.list.module')->getPath('oe_dashboard_agent') . '/tests/fixtures/manifest.json'));
     $extensions = $this->requestExtensions($hash);
     $this->assertDbLogMessage('dashboard_agent', 'The list of extensions was requested.');
     $this->assertEquals('0.5', $extensions->site_version);

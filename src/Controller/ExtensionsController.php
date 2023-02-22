@@ -7,8 +7,10 @@ namespace Drupal\oe_dashboard_agent\Controller;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Extension\InfoParserException;
 use Drupal\Core\Extension\ModuleExtensionList;
+use Drupal\Core\Extension\ThemeExtensionList;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\Core\Update\UpdateHookRegistry;
 use Drupal\oe_dashboard_agent\Event\ExtensionsInfoAlterEvent;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -55,6 +57,13 @@ class ExtensionsController extends ControllerBase {
   protected $manifestFileLocation;
 
   /**
+   * The update hook registry.
+   *
+   * @var \Drupal\Core\Update\UpdateHookRegistry
+   */
+  protected $updateHookRegistry;
+
+  /**
    * ExtensionsController constructor.
    *
    * @param \Drupal\Core\Extension\ModuleExtensionList $extension_list_module
@@ -67,13 +76,16 @@ class ExtensionsController extends ControllerBase {
    *   The event dispatcher.
    * @param string $manifest_file_location
    *   The location of the manifest file.
+   * @param \Drupal\Core\Update\UpdateHookRegistry $updateHookRegistry
+   *   The update hook registry.
    */
-  public function __construct(ModuleExtensionList $extension_list_module, ThemeHandlerInterface $theme_handler, LoggerChannelFactoryInterface $logger_factory, EventDispatcherInterface $eventDispatcher, string $manifest_file_location) {
+  public function __construct(ModuleExtensionList $extension_list_module, ThemeHandlerInterface $theme_handler, LoggerChannelFactoryInterface $logger_factory, EventDispatcherInterface $eventDispatcher, string $manifest_file_location, UpdateHookRegistry $updateHookRegistry) {
     $this->moduleExtensionList = $extension_list_module;
     $this->themeHandler = $theme_handler;
     $this->logger = $logger_factory->get('dashboard_agent');
     $this->eventDispatcher = $eventDispatcher;
     $this->manifestFileLocation = $manifest_file_location;
+    $this->updateHookRegistry = $updateHookRegistry;
   }
 
   /**
@@ -85,7 +97,8 @@ class ExtensionsController extends ControllerBase {
       $container->get('theme_handler'),
       $container->get('logger.factory'),
       $container->get('event_dispatcher'),
-      $container->getParameter('oe_dashboard_agent.manifest_file_location')
+      $container->getParameter('oe_dashboard_agent.manifest_file_location'),
+      $container->get('update.update_hook_registry')
     );
   }
 
@@ -100,7 +113,7 @@ class ExtensionsController extends ControllerBase {
     try {
       $extensions = $this->moduleExtensionList->reset()->getList();
       // Sort modules by name.
-      uasort($extensions, 'system_sort_modules_by_info_name');
+      uasort($extensions, [ModuleExtensionList::class, 'sortByName']);
     }
     catch (InfoParserException $e) {
       $this->logger->warning($this->t('Extensions could not be listed due to an error: %error', ['%error' => $e->getMessage()]));
@@ -111,7 +124,7 @@ class ExtensionsController extends ControllerBase {
     try {
       $themes = $this->themeHandler->rebuildThemeData();
       // Sort themes by name.
-      uasort($themes, 'system_sort_modules_by_info_name');
+      uasort($themes, [ThemeExtensionList::class, 'sortByName']);
     }
     catch (InfoParserException $e) {
       $this->logger->warning($this->t('Themes could not be listed due to an error: %error', ['%error' => $e->getMessage()]));
@@ -150,7 +163,7 @@ class ExtensionsController extends ControllerBase {
         'path' => $extension->getPathname(),
         'installed' => (bool) $extension->status,
         'requires' => array_keys($extension->requires) ? array_keys($extension->requires) : '',
-        'schema_version' => drupal_get_installed_schema_version($extension_name),
+        'schema_version' => $this->updateHookRegistry->getInstalledVersion($extension_name),
       ];
     }
 
@@ -178,7 +191,7 @@ class ExtensionsController extends ControllerBase {
     $this->addSiteVersion($info);
 
     $event = new ExtensionsInfoAlterEvent($info);
-    $this->eventDispatcher->dispatch(ExtensionsInfoAlterEvent::EVENT, $event);
+    $this->eventDispatcher->dispatch($event, ExtensionsInfoAlterEvent::EVENT);
 
     $this->logger->info('The list of extensions was requested.');
     return new JsonResponse(['extensions' => $event->getInfo()]);
