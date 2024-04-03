@@ -1,18 +1,30 @@
 # Changelog
 
+## [1.1.0](https://github.com/openeuropa/oe_dashboard_agent/tree/1.1.0) (2024-04-03)
+
+[Full Changelog](https://github.com/openeuropa/oe_dashboard_agent/compare/1.0.0...1.1.0)
+
+**Merged pull requests:**
+
+- EWPP-4242: Support D10.2 and drop D9. [\#23](https://github.com/openeuropa/oe_dashboard_agent/pull/23) ([nagyad](https://github.com/nagyad))
+
 ## [1.0.0](https://github.com/openeuropa/oe_dashboard_agent/tree/1.0.0) (2023-02-22)
+
 [Full Changelog](https://github.com/openeuropa/oe_dashboard_agent/compare/0.5.0...1.0.0)
 
 **Merged pull requests:**
 
+- Prepare changelog for release 1.0.0. [\#22](https://github.com/openeuropa/oe_dashboard_agent/pull/22) ([brummbar](https://github.com/brummbar))
 - EWPP-2986: Drupal 10 compatibility. [\#21](https://github.com/openeuropa/oe_dashboard_agent/pull/21) ([brummbar](https://github.com/brummbar))
 - OEL-2115: Update to PHP 8.1 [\#20](https://github.com/openeuropa/oe_dashboard_agent/pull/20) ([brummbar](https://github.com/brummbar))
 
 ## [0.5.0](https://github.com/openeuropa/oe_dashboard_agent/tree/0.5.0) (2022-08-02)
+
 [Full Changelog](https://github.com/openeuropa/oe_dashboard_agent/compare/0.4.0...0.5.0)
 
 **Merged pull requests:**
 
+- Prepare release 0.5.0. [\#19](https://github.com/openeuropa/oe_dashboard_agent/pull/19) ([imanoleguskiza](https://github.com/imanoleguskiza))
 - EWPP-2358: Drupal 9.4 support. [\#18](https://github.com/openeuropa/oe_dashboard_agent/pull/18) ([yenyasinn](https://github.com/yenyasinn))
 
 ## [0.4.0](https://github.com/openeuropa/oe_dashboard_agent/tree/0.4.0) (2022-01-18)
