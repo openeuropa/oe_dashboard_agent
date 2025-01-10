@@ -204,7 +204,13 @@ class DashboardAgentTest extends BrowserTestBase {
 
     // Access the ULI and assert we got logged in.
     $this->drupalGet($uli);
-    $this->assertSession()->pageTextContains('You have just used your one-time login link. It is no longer necessary to use this link to log in.');
+    if (version_compare(\Drupal::VERSION, '10.4.0', '<')) {
+      // @todo Remove this after we drop support for D10.3.
+      $this->assertSession()->pageTextContains('You have just used your one-time login link. It is no longer necessary to use this link to log in.');
+    }
+    else {
+      $this->assertSession()->pageTextContains('You have used a one-time login link. You can set your new password now.');
+    }
   }
 
   /**
