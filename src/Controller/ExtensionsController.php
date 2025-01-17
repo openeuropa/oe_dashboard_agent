@@ -64,6 +64,13 @@ class ExtensionsController extends ControllerBase {
   protected $updateHookRegistry;
 
   /**
+   * The theme extension list.
+   *
+   * @var \Drupal\Core\Extension\ThemeExtensionList
+   */
+  protected ThemeExtensionList $themeExtensionList;
+
+  /**
    * ExtensionsController constructor.
    *
    * @param \Drupal\Core\Extension\ModuleExtensionList $extension_list_module
@@ -78,14 +85,17 @@ class ExtensionsController extends ControllerBase {
    *   The location of the manifest file.
    * @param \Drupal\Core\Update\UpdateHookRegistry $updateHookRegistry
    *   The update hook registry.
+   * @param \Drupal\Core\Extension\ThemeExtensionList $theme_extension_list
+   *   The theme extension list.
    */
-  public function __construct(ModuleExtensionList $extension_list_module, ThemeHandlerInterface $theme_handler, LoggerChannelFactoryInterface $logger_factory, EventDispatcherInterface $eventDispatcher, string $manifest_file_location, UpdateHookRegistry $updateHookRegistry) {
+  public function __construct(ModuleExtensionList $extension_list_module, ThemeHandlerInterface $theme_handler, LoggerChannelFactoryInterface $logger_factory, EventDispatcherInterface $eventDispatcher, string $manifest_file_location, UpdateHookRegistry $updateHookRegistry, ThemeExtensionList $theme_extension_list) {
     $this->moduleExtensionList = $extension_list_module;
     $this->themeHandler = $theme_handler;
     $this->logger = $logger_factory->get('dashboard_agent');
     $this->eventDispatcher = $eventDispatcher;
     $this->manifestFileLocation = $manifest_file_location;
     $this->updateHookRegistry = $updateHookRegistry;
+    $this->themeExtensionList = $theme_extension_list;
   }
 
   /**
@@ -98,7 +108,8 @@ class ExtensionsController extends ControllerBase {
       $container->get('logger.factory'),
       $container->get('event_dispatcher'),
       $container->getParameter('oe_dashboard_agent.manifest_file_location'),
-      $container->get('update.update_hook_registry')
+      $container->get('update.update_hook_registry'),
+      $container->get('extension.list.theme')
     );
   }
 
@@ -122,7 +133,7 @@ class ExtensionsController extends ControllerBase {
 
     // Get all available themes.
     try {
-      $themes = $this->themeHandler->rebuildThemeData();
+      $themes = $this->themeExtensionList->reset()->getList();
       // Sort themes by name.
       uasort($themes, [ThemeExtensionList::class, 'sortByName']);
     }
@@ -185,7 +196,7 @@ class ExtensionsController extends ControllerBase {
     }
 
     // Add Drupal and PHP versions.
-    $info['drupal_version'] = \DRUPAL::VERSION;
+    $info['drupal_version'] = \Drupal::VERSION;
     $info['php_version'] = phpversion();
 
     $this->addSiteVersion($info);
