@@ -14,7 +14,7 @@
         "drupal/core-composer-scaffold": "^10.3 || ^11",
         "drupal/datetime_testing": "^1.0-beta4",
         "drupal/drupal-extension": "^5.0",
-        "drush/drush": "^12.4",
+        "drush/drush": "^12.4 || ^13",
         "openeuropa/code-review-drupal": "^1.0.0-alpha",
         "openeuropa/task-runner-drupal-project-symlink": "^1.0",
         "phpspec/prophecy-phpunit": "^2",
