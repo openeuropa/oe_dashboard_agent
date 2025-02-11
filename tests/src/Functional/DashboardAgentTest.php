@@ -204,8 +204,12 @@ class DashboardAgentTest extends BrowserTestBase {
 
     // Access the ULI and assert we got logged in.
     $this->drupalGet($uli);
-    if (version_compare(\Drupal::VERSION, '10.4.0', '<')) {
-      // @todo Remove this after we drop support for D10.3.
+    if (version_compare(\Drupal::VERSION, '10.4.0', '<')
+      || (version_compare(\Drupal::VERSION, '11.0.0', '>=') && version_compare(\Drupal::VERSION, '11.1.0', '<'))) {
+      // @todo Remove this after we drop support for D11.0.
+      // The string was changed in the 10.4, 10.5 and 11.1 but not in 10.3
+      // and 11.0.
+      // https://www.drupal.org/project/drupal/issues/2969406.
       $this->assertSession()->pageTextContains('You have just used your one-time login link. It is no longer necessary to use this link to log in.');
     }
     else {
@@ -245,7 +249,14 @@ class DashboardAgentTest extends BrowserTestBase {
     $profiles = $extensions->profiles;
     $this->assertEquals('Testing', $profiles->testing->name);
     $this->assertEquals('Other', $profiles->testing->package);
-    $this->assertEquals('core/profiles/testing/testing.info.yml', $profiles->testing->path);
+    if (version_compare(\Drupal::VERSION, '11.1.0', '<')) {
+      // @todo Remove this after we drop support for D10 and D11.0.
+      // https://www.drupal.org/node/3490626
+      $this->assertEquals('core/profiles/testing/testing.info.yml', $profiles->testing->path);
+    }
+    else {
+      $this->assertEquals('core/profiles/tests/testing/testing.info.yml', $profiles->testing->path);
+    }
     $this->assertEquals(TRUE, $profiles->testing->installed);
     $this->assertEquals("", $profiles->testing->requires);
 
