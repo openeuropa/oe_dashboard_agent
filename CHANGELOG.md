@@ -1,10 +1,18 @@
 # Change Log
 
+## [1.3.0](https://github.com/openeuropa/oe_dashboard_agent/tree/1.3.0) (2025-02-26)
+[Full Changelog](https://github.com/openeuropa/oe_dashboard_agent/compare/1.2.0...1.3.0)
+
+**Merged pull requests:**
+
+- EWPP-4612: D11 upgrade. [\#28](https://github.com/openeuropa/oe_dashboard_agent/pull/28) ([piotrsmykaj](https://github.com/piotrsmykaj))
+
 ## [1.2.0](https://github.com/openeuropa/oe_dashboard_agent/tree/1.2.0) (2025-01-28)
 [Full Changelog](https://github.com/openeuropa/oe_dashboard_agent/compare/1.1.0...1.2.0)
 
 **Merged pull requests:**
 
+- Release-1.2.0: Update changelog. [\#27](https://github.com/openeuropa/oe_dashboard_agent/pull/27) ([nagyad](https://github.com/nagyad))
 - EWPP-4991: Use PHP8.3 version. [\#26](https://github.com/openeuropa/oe_dashboard_agent/pull/26) ([nagyad](https://github.com/nagyad))
 - OEL-3026: Update to Drupal 10.3 [\#25](https://github.com/openeuropa/oe_dashboard_agent/pull/25) ([AaronGilMartinez](https://github.com/AaronGilMartinez))
 
