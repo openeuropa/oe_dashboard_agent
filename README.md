@@ -1,3 +1,5 @@
+# :warning: This repository is archived
+
 # OpenEuropa Dashboard Agent
 
 Drupal module that integrates with the central Dashboard.
